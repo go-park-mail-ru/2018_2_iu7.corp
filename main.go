@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	DefaultAddress = ":8080"
+	DefaultAddress = ":8090"
 )
 
 func main() {
