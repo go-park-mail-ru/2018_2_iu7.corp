@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	DefaultAddress = ":8090"
+	DefaultAddress = ":8080"
 )
 
 func main() {
@@ -16,8 +16,8 @@ func main() {
 		addr = DefaultAddress
 	}
 
-	server := CreateServer(addr)
-	if server == nil {
+	srv := CreateServer(addr)
+	if srv == nil {
 		log.Fatal("Server startup failed")
 	}
 
@@ -26,7 +26,7 @@ func main() {
 
 	var err error = nil
 	go func() {
-		err = server.ListenAndServe()
+		err = srv.ListenAndServe()
 	}()
 
 	if err != nil {
