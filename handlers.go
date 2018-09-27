@@ -21,3 +21,15 @@ func LogoutRequestHandler() http.Handler {
 		//TODO
 	})
 }
+
+func ProfileRequestHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		//TODO
+	})
+}
+
+func LeaderBoardRequestHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		//TODO
+	})
+}

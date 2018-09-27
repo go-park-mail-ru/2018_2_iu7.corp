@@ -18,6 +18,8 @@ func createHandlers() http.Handler {
 	handlers["register"] = POST(RegisterRequestHandler())
 	handlers["login"] = POST(LoginRequestHandler())
 	handlers["logout"] = POST(LogoutRequestHandler())
+	handlers["profile"] = GETorPATCH(ProfileRequestHandler())
+	handlers["leaderboard"] = GET(LeaderBoardRequestHandler())
 
 	for k, v := range handlers {
 		handlers[k] = withLogging(v)
@@ -27,6 +29,8 @@ func createHandlers() http.Handler {
 	mux.Handle("/register", handlers["register"])
 	mux.Handle("/login", handlers["login"])
 	mux.Handle("/logout", handlers["logout"])
+	mux.Handle("/profile", handlers["profile"])
+	mux.Handle("/leaderboard", handlers["leaderboard"])
 
 	return mux
 }
@@ -37,6 +41,10 @@ func GET(h http.Handler) http.Handler {
 
 func POST(h http.Handler) http.Handler {
 	return checkMethod(h, []string{http.MethodPost})
+}
+
+func GETorPATCH(h http.Handler) http.Handler {
+	return checkMethod(h, []string{http.MethodGet, http.MethodPatch})
 }
 
 func checkMethod(h http.Handler, allowed []string) http.Handler {
