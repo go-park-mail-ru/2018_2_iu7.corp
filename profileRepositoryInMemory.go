@@ -1,8 +1,12 @@
 package main
 
-import "sync"
+import (
+	"sync"
+)
 
 type InMemoryProfileRepository struct {
+	ProfileRepository
+
 	storage []Profile
 	rwMutex *sync.RWMutex
 }

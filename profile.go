@@ -1,9 +1,10 @@
 package main
 
 type Profile struct {
-	ID       uint64
-	Email    string
-	Username string
-	Password string
-	Score    uint16
+	ID         uint64
+	Email      string
+	Username   string
+	Password   string
+	AvatarPath string
+	Score      uint16
 }

@@ -5,11 +5,21 @@ import (
 	"net/http"
 )
 
-func CreateServer(addr string) *http.Server {
-	return &http.Server{
-		Addr:    addr,
-		Handler: createHandlers(),
+type Server struct {
+	http.Server
+
+	StaticPath string
+	UploadPath string
+}
+
+func CreateServer(addr, staticPath, uploadPath string) *Server {
+	server := &Server{
+		StaticPath: staticPath,
+		UploadPath: uploadPath,
 	}
+	server.Addr = addr
+	server.Handler = createHandlers()
+	return server
 }
 
 func createHandlers() http.Handler {
