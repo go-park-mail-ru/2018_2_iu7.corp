@@ -22,7 +22,8 @@ func LogoutRequestHandler() http.Handler {
 	})
 }
 
-func ProfileRequestHandler() http.Handler {
+func ProfileRequestHandler(uploadPath string) http.Handler {
+	_ = uploadPath
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		//TODO
 	})

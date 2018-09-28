@@ -5,42 +5,39 @@ import (
 	"net/http"
 )
 
-type Server struct {
-	http.Server
-
-	StaticPath string
-	UploadPath string
-}
-
-func CreateServer(addr, staticPath, uploadPath string) *Server {
-	server := &Server{
-		StaticPath: staticPath,
-		UploadPath: uploadPath,
+func CreateServer(addr, staticPath, uploadsPath string) *http.Server {
+	return &http.Server{
+		Addr:    addr,
+		Handler: createHandlers(staticPath, uploadsPath),
 	}
-	server.Addr = addr
-	server.Handler = createHandlers()
-	return server
 }
 
-func createHandlers() http.Handler {
+func createHandlers(staticPath, uploadsPath string) http.Handler {
 	handlers := make(map[string]http.Handler)
 
 	handlers["register"] = POST(RegisterRequestHandler())
 	handlers["login"] = POST(LoginRequestHandler())
 	handlers["logout"] = POST(LogoutRequestHandler())
-	handlers["profile"] = GETorPATCH(ProfileRequestHandler())
+	handlers["profile"] = GETorPATCH(ProfileRequestHandler(uploadsPath))
 	handlers["leaderboard"] = GET(LeaderBoardRequestHandler())
+
+	handlers["static"] = http.FileServer(http.Dir(staticPath))
+	handlers["uploads"] = http.FileServer(http.Dir(uploadsPath))
 
 	for k, v := range handlers {
 		handlers[k] = withLogging(v)
 	}
 
 	mux := http.NewServeMux()
+
 	mux.Handle("/register", handlers["register"])
 	mux.Handle("/login", handlers["login"])
 	mux.Handle("/logout", handlers["logout"])
 	mux.Handle("/profile", handlers["profile"])
 	mux.Handle("/leaderboard", handlers["leaderboard"])
+
+	mux.Handle("/static/", http.StripPrefix("/static", handlers["static"]))
+	mux.Handle("/uploads/", http.StripPrefix("/uploads", handlers["uploads"]))
 
 	return mux
 }
