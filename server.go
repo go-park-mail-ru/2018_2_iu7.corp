@@ -13,31 +13,25 @@ func CreateServer(addr, staticPath, uploadsPath string) *http.Server {
 }
 
 func createHandlers(staticPath, uploadsPath string) http.Handler {
-	reqHandlers := make(map[string]http.Handler)
-	reqHandlers["register"] = POST(RegisterRequestHandler())
-	reqHandlers["login"] = POST(LoginRequestHandler())
-	reqHandlers["logout"] = POST(LogoutRequestHandler())
-	reqHandlers["profile"] = GETorPATCH(ProfileRequestHandler(uploadsPath))
-	reqHandlers["leaderboard"] = GET(LeaderBoardRequestHandler())
+	handlers := make(map[string]http.Handler)
 
-	for k, v := range reqHandlers {
-		reqHandlers[k] = withLogging(v)
+	handlers["/register"] = POST(RegisterRequestHandler())
+	handlers["/login"] = POST(LoginRequestHandler())
+	handlers["/logout"] = POST(LogoutRequestHandler())
+	handlers["/profile"] = GETorPATCH(ProfileRequestHandler(uploadsPath))
+	handlers["/leaderboard"] = GET(LeaderBoardRequestHandler())
+
+	handlers["/static/"] = http.StripPrefix("/static", http.FileServer(http.Dir(staticPath)))
+	handlers["/uploads/"] = http.StripPrefix("/uploads", http.FileServer(http.Dir(uploadsPath)))
+
+	for k, v := range handlers {
+		handlers[k] = withLogging(v)
 	}
 
-	fileHandlers := make(map[string]http.Handler)
-	fileHandlers["static"] = http.FileServer(http.Dir(staticPath))
-	fileHandlers["uploads"] = http.FileServer(http.Dir(uploadsPath))
-
 	mux := http.NewServeMux()
-
-	mux.Handle("/register", reqHandlers["register"])
-	mux.Handle("/login", reqHandlers["login"])
-	mux.Handle("/logout", reqHandlers["logout"])
-	mux.Handle("/profile", reqHandlers["profile"])
-	mux.Handle("/leaderboard", reqHandlers["leaderboard"])
-
-	mux.Handle("/static/", http.StripPrefix("/static", fileHandlers["static"]))
-	mux.Handle("/uploads/", http.StripPrefix("/uploads", fileHandlers["uploads"]))
+	for k, v := range handlers {
+		mux.Handle(k, v)
+	}
 
 	return mux
 }
