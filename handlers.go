@@ -24,7 +24,7 @@ func RegisterRequestHandler() http.Handler {
 		id, err := profileRepository.SaveNew(p)
 		if err != nil {
 			switch err.(type) {
-			case AlreadyExistsError:
+			case *AlreadyExistsError:
 				writeErrorResponse(w, http.StatusConflict, err)
 			default:
 				writeErrorResponse(w, http.StatusInternalServerError, err)

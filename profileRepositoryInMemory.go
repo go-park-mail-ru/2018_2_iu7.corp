@@ -20,6 +20,7 @@ func NewInMemoryProfileRepository() *InMemoryProfileRepository {
 
 	return &InMemoryProfileRepository{
 		idSequence: *idSequence,
+		rwMutex:    &sync.RWMutex{},
 	}
 }
 
