@@ -2,12 +2,40 @@ package main
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 )
 
 func RegisterRequestHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//TODO
+		reqBody, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			writeErrorResponse(w, http.StatusInternalServerError, err)
+			return
+		}
+		r.Body.Close()
+
+		var p Profile
+		if err = json.Unmarshal(reqBody, &p); err != nil {
+			writeErrorResponse(w, http.StatusBadRequest, err)
+			return
+		}
+
+		id, err := profileRepository.SaveNew(p)
+		if err != nil {
+			switch err.(type) {
+			case AlreadyExistsError:
+				writeErrorResponse(w, http.StatusConflict, err)
+			default:
+				writeErrorResponse(w, http.StatusInternalServerError, err)
+			}
+			return
+		}
+
+		resp := make(map[string]uint64)
+		resp["id"] = id
+
+		writeSuccessResponse(w, http.StatusCreated, resp)
 	})
 }
 
@@ -36,7 +64,7 @@ func LeaderBoardRequestHandler() http.Handler {
 	})
 }
 
-func sendErrorResponse(w http.ResponseWriter, status int, err error) {
+func writeErrorResponse(w http.ResponseWriter, status int, err error) {
 	jsonResp, err := json.Marshal(err.Error())
 	if err != nil {
 		panic(err)
@@ -46,8 +74,8 @@ func sendErrorResponse(w http.ResponseWriter, status int, err error) {
 	w.Write(jsonResp)
 }
 
-func sendSuccessResponse(w http.ResponseWriter, status int, v interface{}) {
-	jsonResp, err := json.Marshal(v)
+func writeSuccessResponse(w http.ResponseWriter, status int, resp interface{}) {
+	jsonResp, err := json.Marshal(resp)
 	if err != nil {
 		panic(err)
 	}

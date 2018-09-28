@@ -12,6 +12,10 @@ const (
 	DefaultUploadsPath = "./upload/"
 )
 
+var (
+	profileRepository ProfileRepository
+)
+
 func main() {
 	addr := os.Getenv("SERVER_ADDRESS")
 	if addr == "" {
@@ -30,7 +34,12 @@ func main() {
 
 	srv := CreateServer(addr, staticPath, uploadPath)
 	if srv == nil {
-		log.Fatal("Server startup failed")
+		log.Fatal("Server not started")
+	}
+
+	profileRepository = NewInMemoryProfileRepository()
+	if profileRepository == nil {
+		log.Fatal("Profile repository not created")
 	}
 
 	wg := &sync.WaitGroup{}
