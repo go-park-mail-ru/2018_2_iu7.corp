@@ -21,6 +21,11 @@ func RegisterRequestHandler() http.Handler {
 			return
 		}
 
+		if err = p.ValidateNew(); err != nil {
+			writeErrorResponse(w, http.StatusBadRequest, err)
+			return
+		}
+
 		id, err := profileRepository.SaveNew(p)
 		if err != nil {
 			switch err.(type) {
