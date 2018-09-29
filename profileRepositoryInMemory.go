@@ -5,8 +5,6 @@ import (
 )
 
 type InMemoryProfileRepository struct {
-	ProfileRepository
-
 	idSequence inMemoryProfileRepositoryIDSequence
 	storage    []Profile
 	rwMutex    *sync.RWMutex

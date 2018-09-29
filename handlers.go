@@ -82,8 +82,17 @@ func LeaderBoardRequestHandler() http.Handler {
 
 func LoggingMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer log.Println(r.Method, r.URL.Path)
-		h.ServeHTTP(w, r)
+		status := 0
+
+		wr := ResponseWriter{
+			wrFunc: func(statusCode int) {
+				status = statusCode
+			},
+			writer: w,
+		}
+
+		h.ServeHTTP(wr, r)
+		log.Println(r.Method, r.URL.Path, status)
 	})
 }
 
