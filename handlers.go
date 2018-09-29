@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
+	"log"
 	"net/http"
 )
 
@@ -60,8 +61,14 @@ func LogoutRequestHandler() http.Handler {
 	})
 }
 
-func ProfileRequestHandler(uploadPath string) http.Handler {
-	_ = uploadPath
+func ProfileRequestHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		//TODO
+	})
+}
+
+func CurrentProfileRequestHandler(uploadsPath string) http.Handler {
+	_ = uploadsPath
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		//TODO
 	})
@@ -70,6 +77,13 @@ func ProfileRequestHandler(uploadPath string) http.Handler {
 func LeaderBoardRequestHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		//TODO
+	})
+}
+
+func LoggingMiddleware(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer log.Println(r.Method, r.URL.Path)
+		h.ServeHTTP(w, r)
 	})
 }
 
