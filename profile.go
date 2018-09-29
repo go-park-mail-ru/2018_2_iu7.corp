@@ -1,6 +1,8 @@
 package main
 
-import "fmt"
+import (
+	"regexp"
+)
 
 type Profile struct {
 	ID         uint64 `json:"id"`
@@ -24,29 +26,20 @@ func (p *Profile) ValidateNew() error {
 }
 
 func (p Profile) Validate() error {
-	if p.Username == "" {
-		return NewInvalidFormatError("invalid username: empty")
+	if m, err := regexp.MatchString("^\\w+$", p.Username); err != nil {
+		panic(err)
+	} else if !m {
+		return NewInvalidFormatError("invalid username")
 	}
 
-	for i, c := range p.Username {
-		if c < 'a' || c > 'z' {
-			return NewInvalidFormatError(fmt.Sprintf("invalid username: position %d", i))
-		}
-	}
-
-	flag := false
-	for i, c := range p.Email {
-		if c == '@' {
-			if !flag {
-				flag = true
-			} else {
-				return NewInvalidFormatError(fmt.Sprintf("invalid email: position %d", i))
-			}
-		}
+	if m, err := regexp.MatchString("^.+@.+$", p.Email); err != nil {
+		panic(err)
+	} else if !m {
+		return NewInvalidFormatError("invalid email")
 	}
 
 	if p.Password == "" {
-		return NewInvalidFormatError("invalid password: empty")
+		return NewInvalidFormatError("invalid password")
 	}
 
 	return nil

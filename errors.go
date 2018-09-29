@@ -23,18 +23,10 @@ func NewNotFoundError(msg string) *NotFoundError {
 	return err
 }
 
-func (err NotFoundError) Error() string {
-	return err.msg
-}
-
 func NewAlreadyExistsError(msg string) *AlreadyExistsError {
 	err := &AlreadyExistsError{}
 	err.msg = msg
 	return err
-}
-
-func (err AlreadyExistsError) Error() string {
-	return err.msg
 }
 
 func NewInvalidFormatError(msg string) *InvalidFormatError {
@@ -43,6 +35,6 @@ func NewInvalidFormatError(msg string) *InvalidFormatError {
 	return err
 }
 
-func (err AlreadyExistsError) Error() string {
+func (err ServerError) Error() string {
 	return err.msg
 }
