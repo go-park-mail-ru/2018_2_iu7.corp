@@ -75,7 +75,9 @@ func LeaderBoardRequestHandler() http.Handler {
 
 func writeErrorResponse(w http.ResponseWriter, status int, err error) {
 	w.WriteHeader(status)
-	w.Write([]byte(err.Error()))
+	if _, err := w.Write([]byte(err.Error())); err != nil {
+		panic(err)
+	}
 }
 
 func writeSuccessResponse(w http.ResponseWriter, status int, resp interface{}) {
@@ -85,5 +87,7 @@ func writeSuccessResponse(w http.ResponseWriter, status int, resp interface{}) {
 	}
 
 	w.WriteHeader(status)
-	w.Write(jsonResp)
+	if _, err := w.Write(jsonResp); err != nil {
+		panic(err)
+	}
 }
