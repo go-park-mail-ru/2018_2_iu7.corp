@@ -2,16 +2,20 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
+)
+
+var (
+	internalServerError = errors.New("500 internal server error")
 )
 
 func RegisterRequestHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		reqBody, err := ioutil.ReadAll(r.Body)
 		if err != nil {
-			writeErrorResponse(w, http.StatusInternalServerError, err)
-			return
+			panic(err)
 		}
 		r.Body.Close()
 
@@ -32,7 +36,7 @@ func RegisterRequestHandler() http.Handler {
 			case *AlreadyExistsError:
 				writeErrorResponse(w, http.StatusConflict, err)
 			default:
-				writeErrorResponse(w, http.StatusInternalServerError, err)
+				writeErrorResponse(w, http.StatusInternalServerError, internalServerError)
 			}
 			return
 		}
