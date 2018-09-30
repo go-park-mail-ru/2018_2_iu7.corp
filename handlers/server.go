@@ -7,15 +7,26 @@ import (
 	"net/http"
 )
 
+type ServerConfig struct {
+	Address           string
+	StaticPath        string
+	UploadsPath       string
+	SessionStorage    sessions.SessionStorage
+	ProfileRepository profiles.ProfileRepository
+}
+
 var (
 	sessionStorage    sessions.SessionStorage
 	profileRepository profiles.ProfileRepository
 )
 
-func CreateServer(addr, staticPath, uploadsPath string) *http.Server {
+func CreateServer(config ServerConfig) *http.Server {
+	sessionStorage = config.SessionStorage
+	profileRepository = config.ProfileRepository
+
 	return &http.Server{
-		Addr:    addr,
-		Handler: createHandlers(staticPath, uploadsPath),
+		Addr:    config.Address,
+		Handler: createHandlers(config.StaticPath, config.UploadsPath),
 	}
 }
 
@@ -43,12 +54,12 @@ func createHandlers(staticPath, uploadsPath string) http.Handler {
 		Handler:    LogoutRequestHandler(),
 		Middleware: []mux.MiddlewareFunc{AuthenticatedMiddleware, LoggingMiddleware},
 	}
-	handlers["/profiles/{id:[0-9]+}"] = RequestHandlerInfo{
+	handlers["/profile/{id:[0-9]+}"] = RequestHandlerInfo{
 		Methods:    []string{http.MethodGet},
 		Handler:    ProfileRequestHandler(),
 		Middleware: []mux.MiddlewareFunc{LoggingMiddleware},
 	}
-	handlers["/profiles"] = RequestHandlerInfo{
+	handlers["/profile"] = RequestHandlerInfo{
 		Methods:    []string{http.MethodGet, http.MethodPut},
 		Handler:    CurrentProfileRequestHandler(),
 		Middleware: []mux.MiddlewareFunc{AuthenticatedMiddleware, LoggingMiddleware},

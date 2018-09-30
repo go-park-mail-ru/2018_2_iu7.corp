@@ -6,7 +6,6 @@ import (
 	"2018_2_iu7.corp/sessions"
 	"log"
 	"os"
-	"sync"
 )
 
 const (
@@ -16,50 +15,40 @@ const (
 )
 
 func main() {
-	addr := os.Getenv("SERVER_ADDRESS")
-	if addr == "" {
-		addr = DefaultAddress
+	config := handlers.ServerConfig{}
+
+	config.Address = os.Getenv("SERVER_ADDRESS")
+	if config.Address == "" {
+		config.Address = DefaultAddress
 	}
 
-	staticPath := os.Getenv("SERVER_STATIC_PATH")
-	if staticPath == "" {
-		staticPath = DefaultStaticPath
+	config.StaticPath = os.Getenv("SERVER_STATIC_PATH")
+	if config.StaticPath == "" {
+		config.StaticPath = DefaultStaticPath
 	}
 
-	uploadPath := os.Getenv("SERVER_UPLOAD_PATH")
-	if uploadPath == "" {
-		uploadPath = DefaultUploadsPath
+	config.UploadsPath = os.Getenv("SERVER_UPLOAD_PATH")
+	if config.UploadsPath == "" {
+		config.UploadsPath = DefaultUploadsPath
 	}
 
-	srv := handlers.CreateServer(addr, staticPath, uploadPath)
+	config.SessionStorage = sessions.NewInMemorySessionStorage()
+	if config.SessionStorage == nil {
+		log.Fatal("Session storage not created")
+	}
+
+	config.ProfileRepository = profiles.NewInMemoryProfileRepository()
+	if config.ProfileRepository == nil {
+		log.Fatal("Profile repository not created")
+	}
+
+	srv := handlers.CreateServer(config)
 	if srv == nil {
 		log.Fatal("Server not started")
 	}
 
-	sessionStorage := sessions.NewInMemorySessionStorage()
-	if sessionStorage == nil {
-		log.Fatal("Session storage not created")
-	}
-
-	profileRepository := profiles.NewInMemoryProfileRepository()
-	if profileRepository == nil {
-		log.Fatal("Profile repository not created")
-	}
-
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
-
-	var err error = nil
-	go func() {
-		err = srv.ListenAndServe()
-	}()
-
+	err := srv.ListenAndServe()
 	if err != nil {
-		wg.Done()
 		log.Fatal(err.Error())
-	} else {
-		log.Printf("Server started at %s", addr)
 	}
-
-	wg.Wait()
 }
