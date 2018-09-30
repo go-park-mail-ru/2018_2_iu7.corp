@@ -51,11 +51,6 @@ func RegisterRequestHandler() http.Handler {
 
 func LoginRequestHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		session, err := sessionStore.Get(r, "session")
-		if err != nil {
-			session, _ = sessionStore.New(r, "session")
-		}
-
 		rb, err := parseRequestBody(r)
 		if err != nil {
 			writeErrorResponse(w, http.StatusBadRequest, err)
@@ -79,14 +74,12 @@ func LoginRequestHandler() http.Handler {
 			return
 		}
 
-		session.Values["authenticated"] = true
-		session.Values["profile_id"] = exp.ID
-
-		err = session.Save(r, w)
-		if err != nil {
-			panic(err)
+		session := Session{
+			Authorized: true,
+			ProfileID:  exp.ID,
 		}
 
+		sessionStorage.SaveSession(w, r, session)
 		writeSuccessResponseEmpty(w, http.StatusOK)
 	})
 }
@@ -118,22 +111,16 @@ func LeaderBoardRequestHandler() http.Handler {
 
 func AuthenticatedMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		session, err := sessionStore.Get(r, "session")
+		session, err := sessionStorage.GetSession(r)
 		if err != nil {
-			session, _ = sessionStore.New(r, "session")
-			session.Values["authenticated"] = false
-			session.Save(r, w)
+			if err = sessionStorage.SaveSession(w, r, Session{Authorized: false}); err != nil {
+				panic(err)
+			}
 			writeErrorResponseEmpty(w, http.StatusUnauthorized)
 			return
 		}
 
-		auth, ok := session.Values["authenticated"].(bool)
-		if !ok {
-			writeErrorResponse(w, http.StatusBadRequest, errors.New("invalid session cookie"))
-			return
-		}
-
-		if !auth {
+		if !session.Authorized {
 			writeErrorResponseEmpty(w, http.StatusUnauthorized)
 			return
 		}
@@ -144,19 +131,13 @@ func AuthenticatedMiddleware(h http.Handler) http.Handler {
 
 func NotAuthenticatedMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		session, err := sessionStore.Get(r, "session")
+		session, err := sessionStorage.GetSession(r)
 		if err != nil {
 			h.ServeHTTP(w, r)
 			return
 		}
 
-		auth, ok := session.Values["authenticated"].(bool)
-		if !ok {
-			writeErrorResponse(w, http.StatusBadRequest, errors.New("invalid session cookie"))
-			return
-		}
-
-		if auth {
+		if session.Authorized {
 			writeErrorResponse(w, http.StatusForbidden, errors.New("already authorized"))
 			return
 		}

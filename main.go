@@ -1,8 +1,6 @@
 package main
 
 import (
-	"github.com/gorilla/securecookie"
-	"github.com/gorilla/sessions"
 	"log"
 	"os"
 	"sync"
@@ -15,7 +13,7 @@ const (
 )
 
 var (
-	sessionStore      sessions.Store
+	sessionStorage    SessionStorage
 	profileRepository ProfileRepository
 )
 
@@ -35,23 +33,15 @@ func main() {
 		uploadPath = DefaultUploadsPath
 	}
 
-	var sk []byte
-
-	sessionKey := os.Getenv("SESSION_KEY")
-	if sessionKey == "" {
-		sk = securecookie.GenerateRandomKey(32)
-	} else {
-		sk = []byte(sessionKey)
-	}
-
 	srv := CreateServer(addr, staticPath, uploadPath)
 	if srv == nil {
 		log.Fatal("Server not started")
 	}
 
-	sessionStore = sessions.NewCookieStore(sk)
-	if sessionStore == nil {
-		log.Fatal("Session store not created")
+	sessionKey := os.Getenv("SESSION_KEY")
+	sessionStorage = NewCookieSessionStorage(sessionKey)
+	if sessionStorage == nil {
+		log.Fatal("Session storage not created")
 	}
 
 	profileRepository = NewInMemoryProfileRepository()
