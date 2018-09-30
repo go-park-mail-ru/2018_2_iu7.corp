@@ -8,10 +8,6 @@ import (
 	"net/http"
 )
 
-var (
-	internalServerError = errors.New("500 internal server error")
-)
-
 func RegisterRequestHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		rb, err := parseRequestBody(r)
@@ -31,7 +27,7 @@ func RegisterRequestHandler() http.Handler {
 			case *AlreadyExistsError:
 				writeErrorResponse(w, http.StatusConflict, err)
 			default:
-				writeErrorResponse(w, http.StatusInternalServerError, internalServerError)
+				writeErrorResponseEmpty(w, http.StatusInternalServerError)
 			}
 			return
 		}
@@ -60,7 +56,7 @@ func LoginRequestHandler() http.Handler {
 			case *NotFoundError:
 				writeErrorResponse(w, http.StatusNotFound, err)
 			default:
-				writeErrorResponse(w, http.StatusInternalServerError, internalServerError)
+				writeErrorResponseEmpty(w, http.StatusInternalServerError)
 			}
 			return
 		}
@@ -108,7 +104,31 @@ func CurrentProfileRequestHandler() http.Handler {
 
 		if r.Method == http.MethodGet {
 			writeSuccessResponse(w, http.StatusOK, p.GetPrivateAttributes())
-			return
+		} else {
+			rb, err := parseRequestBody(r)
+			if err != nil {
+				writeErrorResponse(w, http.StatusBadRequest, err)
+				return
+			}
+
+			if err = p.ParseOnEdit(rb); err != nil {
+				writeErrorResponse(w, http.StatusBadRequest, err)
+				return
+			}
+
+			if err = profileRepository.SaveExisting(p); err != nil {
+				switch err.(type) {
+				case *NotFoundError:
+					writeErrorResponse(w, http.StatusNotFound, err)
+				case *AlreadyExistsError:
+					writeErrorResponse(w, http.StatusConflict, err)
+				default:
+					writeErrorResponseEmpty(w, http.StatusInternalServerError)
+				}
+				return
+			}
+
+			writeSuccessResponseEmpty(w, http.StatusOK)
 		}
 	})
 }

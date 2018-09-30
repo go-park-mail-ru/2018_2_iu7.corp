@@ -44,12 +44,19 @@ func (r *InMemoryProfileRepository) SaveExisting(p Profile) (err error) {
 	r.rwMutex.Lock()
 	defer r.rwMutex.Unlock()
 
-	pPtr := r.findByID(p.ID)
-	if pPtr == nil {
+	index := r.findIndexByID(p.ID)
+	if index == -1 {
 		return NewNotFoundError("profile not found")
 	}
 
-	*pPtr = p
+	if r.storage[index].Username != p.Username && r.findByUsername(p.Username) != nil {
+		return NewAlreadyExistsError("username already taken")
+	}
+	if r.storage[index].Email != p.Email && r.findByEmail(p.Email) != nil {
+		return NewAlreadyExistsError("profile with the email already exists")
+	}
+
+	r.storage[index] = p
 
 	return nil
 }

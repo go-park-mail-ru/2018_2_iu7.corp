@@ -15,7 +15,34 @@ type Profile struct {
 }
 
 func (p *Profile) ParseOnRegister(m map[string]interface{}) error {
-	if len(m) != 3 {
+	return p.parseOnEdit(m, 3)
+}
+
+func (p *Profile) ParseOnLogin(m map[string]interface{}) error {
+	return p.parseOnLogin(m)
+}
+
+func (p *Profile) ParseOnEdit(m map[string]interface{}) error {
+	return p.parseOnEdit(m, -1)
+}
+
+func (p *Profile) GetPublicAttributes() map[string]interface{} {
+	return map[string]interface{}{
+		"id":       p.ID,
+		"username": p.Username,
+		"avatar":   p.AvatarPath,
+		"score":    p.Score,
+	}
+}
+
+func (p *Profile) GetPrivateAttributes() map[string]interface{} {
+	m := p.GetPublicAttributes()
+	m["email"] = p.Email
+	return m
+}
+
+func (p *Profile) parseOnEdit(m map[string]interface{}, n int) error {
+	if n != -1 && len(m) != n {
 		return NewInvalidFormatError("wrong number of attributes")
 	}
 
@@ -40,7 +67,7 @@ func (p *Profile) ParseOnRegister(m map[string]interface{}) error {
 	return nil
 }
 
-func (p *Profile) ParseOnLogin(m map[string]interface{}) error {
+func (p *Profile) parseOnLogin(m map[string]interface{}) error {
 	if len(m) != 2 {
 		return NewInvalidFormatError("wrong number of attributes")
 	}
@@ -62,21 +89,6 @@ func (p *Profile) ParseOnLogin(m map[string]interface{}) error {
 	}
 
 	return nil
-}
-
-func (p *Profile) GetPublicAttributes() map[string]interface{} {
-	return map[string]interface{}{
-		"id":       p.ID,
-		"username": p.Username,
-		"avatar":   p.AvatarPath,
-		"score":    p.Score,
-	}
-}
-
-func (p *Profile) GetPrivateAttributes() map[string]interface{} {
-	m := p.GetPublicAttributes()
-	m["email"] = p.Email
-	return m
 }
 
 func parseUsername(v interface{}) (string, error) {
