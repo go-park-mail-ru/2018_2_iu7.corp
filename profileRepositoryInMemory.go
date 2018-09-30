@@ -1,6 +1,7 @@
 package main
 
 import (
+	"sort"
 	"sync"
 )
 
@@ -93,6 +94,37 @@ func (r *InMemoryProfileRepository) FindByUsernameAndPassword(username, password
 	return p, nil
 }
 
+func (r *InMemoryProfileRepository) GetAllOrderByScore(page, pageSize int) (p []Profile, err error) {
+	if page < 0 {
+		return nil, NewInvalidFormatError("invalid page")
+	}
+	if pageSize < 1 {
+		return nil, NewInvalidFormatError("invalid page size")
+	}
+
+	r.rwMutex.Lock()
+	defer r.rwMutex.Unlock()
+
+	r.sortProfilesByScoreDesc()
+
+	firstIndex := page * pageSize
+	lastIndex := firstIndex + pageSize - 1
+
+	p = []Profile{}
+
+	n := len(r.storage)
+	if firstIndex >= n {
+		return []Profile{}, nil
+	}
+	if lastIndex >= n {
+		lastIndex = n - 1
+	}
+
+	p = append(p, r.storage[firstIndex:lastIndex]...)
+
+	return p, nil
+}
+
 func (r *InMemoryProfileRepository) findByID(id uint64) (p *Profile) {
 	for _, v := range r.storage {
 		if v.ID == id {
@@ -138,6 +170,10 @@ func (r *InMemoryProfileRepository) findByEmail(email string) (p *Profile) {
 	return nil
 }
 
+func (r *InMemoryProfileRepository) sortProfilesByScoreDesc() {
+	sort.Sort(profilesByScoreDesc(r.storage))
+}
+
 type inMemoryProfileRepositoryIDSequence struct {
 	currentValue uint64
 }
@@ -151,4 +187,18 @@ func newInMemoryProfileRepositoryIDSequence() *inMemoryProfileRepositoryIDSequen
 func (s *inMemoryProfileRepositoryIDSequence) nextValue() uint64 {
 	s.currentValue++
 	return s.currentValue
+}
+
+type profilesByScoreDesc []Profile
+
+func (p profilesByScoreDesc) Len() int {
+	return len(p)
+}
+
+func (p profilesByScoreDesc) Swap(i, j int) {
+	p[i], p[j] = p[j], p[i]
+}
+
+func (p profilesByScoreDesc) Less(i, j int) bool {
+	return p[i].Score-p[j].Score < 0
 }
