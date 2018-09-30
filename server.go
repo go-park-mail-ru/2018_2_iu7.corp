@@ -43,7 +43,7 @@ func createHandlers(staticPath, uploadsPath string) http.Handler {
 	}
 	handlers["/profile"] = RequestHandlerInfo{
 		Methods:    []string{http.MethodGet, http.MethodPut},
-		Handler:    CurrentProfileRequestHandler(uploadsPath),
+		Handler:    CurrentProfileRequestHandler(),
 		Middleware: []mux.MiddlewareFunc{LoggingMiddleware},
 	}
 	handlers["/leaderboard/pages/{page:[0-9]+}"] = RequestHandlerInfo{

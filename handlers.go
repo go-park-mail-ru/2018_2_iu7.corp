@@ -98,8 +98,7 @@ func ProfileRequestHandler() http.Handler {
 	})
 }
 
-func CurrentProfileRequestHandler(uploadsPath string) http.Handler {
-	_ = uploadsPath
+func CurrentProfileRequestHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		//TODO
 	})
