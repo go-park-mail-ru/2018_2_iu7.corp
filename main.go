@@ -38,8 +38,7 @@ func main() {
 		log.Fatal("Server not started")
 	}
 
-	sessionKey := os.Getenv("SESSION_KEY")
-	sessionStorage = NewCookieSessionStorage(sessionKey)
+	sessionStorage = NewInMemorySessionStorage()
 	if sessionStorage == nil {
 		log.Fatal("Session storage not created")
 	}

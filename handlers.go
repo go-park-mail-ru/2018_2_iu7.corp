@@ -63,12 +63,8 @@ func LoginRequestHandler() http.Handler {
 			return
 		}
 
-		session := Session{
-			Authorized: true,
-			ProfileID:  exp.ID,
-		}
-
-		if err = sessionStorage.SaveSession(w, r, session); err != nil {
+		session := Session{ProfileID: exp.ID}
+		if err = sessionStorage.SaveSession(w, session); err != nil {
 			panic(err)
 		}
 
@@ -78,8 +74,7 @@ func LoginRequestHandler() http.Handler {
 
 func LogoutRequestHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		session := Session{Authorized: false}
-		if err := sessionStorage.SaveSession(w, r, session); err != nil {
+		if err := sessionStorage.DeleteSession(w, r); err != nil {
 			panic(err)
 		}
 		writeSuccessResponseEmpty(w, http.StatusOK)
@@ -194,37 +189,20 @@ func LeaderBoardRequestHandler() http.Handler {
 
 func AuthenticatedMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		session, err := sessionStorage.GetSession(r)
-		if err != nil {
-			if err = sessionStorage.SaveSession(w, r, Session{Authorized: false}); err != nil {
-				panic(err)
-			}
+		if _, err := sessionStorage.GetSession(r); err != nil {
 			writeErrorResponseEmpty(w, http.StatusUnauthorized)
 			return
 		}
-
-		if !session.Authorized {
-			writeErrorResponseEmpty(w, http.StatusUnauthorized)
-			return
-		}
-
 		h.ServeHTTP(w, r)
 	})
 }
 
 func NotAuthenticatedMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		session, err := sessionStorage.GetSession(r)
-		if err != nil {
-			h.ServeHTTP(w, r)
-			return
-		}
-
-		if session.Authorized {
+		if _, err := sessionStorage.GetSession(r); err == nil {
 			writeErrorResponse(w, http.StatusForbidden, errors.New("already authorized"))
 			return
 		}
-
 		h.ServeHTTP(w, r)
 	})
 }
