@@ -1,8 +1,15 @@
-package main
+package handlers
 
 import (
+	"2018_2_iu7.corp/profiles"
+	"2018_2_iu7.corp/sessions"
 	"github.com/gorilla/mux"
 	"net/http"
+)
+
+var (
+	sessionStorage    sessions.SessionStorage
+	profileRepository profiles.ProfileRepository
 )
 
 func CreateServer(addr, staticPath, uploadsPath string) *http.Server {
@@ -36,12 +43,12 @@ func createHandlers(staticPath, uploadsPath string) http.Handler {
 		Handler:    LogoutRequestHandler(),
 		Middleware: []mux.MiddlewareFunc{AuthenticatedMiddleware, LoggingMiddleware},
 	}
-	handlers["/profile/{id:[0-9]+}"] = RequestHandlerInfo{
+	handlers["/profiles/{id:[0-9]+}"] = RequestHandlerInfo{
 		Methods:    []string{http.MethodGet},
 		Handler:    ProfileRequestHandler(),
 		Middleware: []mux.MiddlewareFunc{LoggingMiddleware},
 	}
-	handlers["/profile"] = RequestHandlerInfo{
+	handlers["/profiles"] = RequestHandlerInfo{
 		Methods:    []string{http.MethodGet, http.MethodPut},
 		Handler:    CurrentProfileRequestHandler(),
 		Middleware: []mux.MiddlewareFunc{AuthenticatedMiddleware, LoggingMiddleware},

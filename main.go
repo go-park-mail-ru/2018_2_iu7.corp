@@ -1,6 +1,9 @@
 package main
 
 import (
+	"2018_2_iu7.corp/handlers"
+	"2018_2_iu7.corp/profiles"
+	"2018_2_iu7.corp/sessions"
 	"log"
 	"os"
 	"sync"
@@ -10,11 +13,6 @@ const (
 	DefaultAddress     = ":8080"
 	DefaultStaticPath  = "./static/"
 	DefaultUploadsPath = "./upload/"
-)
-
-var (
-	sessionStorage    SessionStorage
-	profileRepository ProfileRepository
 )
 
 func main() {
@@ -33,17 +31,17 @@ func main() {
 		uploadPath = DefaultUploadsPath
 	}
 
-	srv := CreateServer(addr, staticPath, uploadPath)
+	srv := handlers.CreateServer(addr, staticPath, uploadPath)
 	if srv == nil {
 		log.Fatal("Server not started")
 	}
 
-	sessionStorage = NewInMemorySessionStorage()
+	sessionStorage := sessions.NewInMemorySessionStorage()
 	if sessionStorage == nil {
 		log.Fatal("Session storage not created")
 	}
 
-	profileRepository = NewInMemoryProfileRepository()
+	profileRepository := profiles.NewInMemoryProfileRepository()
 	if profileRepository == nil {
 		log.Fatal("Profile repository not created")
 	}

@@ -1,6 +1,7 @@
-package main
+package profiles
 
 import (
+	"2018_2_iu7.corp/errs"
 	"sort"
 	"sync"
 )
@@ -28,10 +29,10 @@ func (r *InMemoryProfileRepository) SaveNew(p Profile) (err error) {
 	defer r.rwMutex.Unlock()
 
 	if r.findByUsername(p.Username) != nil {
-		return NewAlreadyExistsError("username already taken")
+		return errs.NewAlreadyExistsError("username already taken")
 	}
 	if r.findByEmail(p.Email) != nil {
-		return NewAlreadyExistsError("profile with the email already exists")
+		return errs.NewAlreadyExistsError("profiles with the email already exists")
 	}
 
 	p.ID = r.idSequence.nextValue()
@@ -46,14 +47,14 @@ func (r *InMemoryProfileRepository) SaveExisting(p Profile) (err error) {
 
 	index := r.findIndexByID(p.ID)
 	if index == -1 {
-		return NewNotFoundError("profile not found")
+		return errs.NewNotFoundError("profiles not found")
 	}
 
 	if r.storage[index].Username != p.Username && r.findByUsername(p.Username) != nil {
-		return NewAlreadyExistsError("username already taken")
+		return errs.NewAlreadyExistsError("username already taken")
 	}
 	if r.storage[index].Email != p.Email && r.findByEmail(p.Email) != nil {
-		return NewAlreadyExistsError("profile with the email already exists")
+		return errs.NewAlreadyExistsError("profiles with the email already exists")
 	}
 
 	r.storage[index] = p
@@ -67,7 +68,7 @@ func (r *InMemoryProfileRepository) DeleteByID(id uint64) (err error) {
 
 	index := r.findIndexByID(id)
 	if index == -1 {
-		return NewNotFoundError("profile not found")
+		return errs.NewNotFoundError("profiles not found")
 	}
 
 	r.storage = append(r.storage[:index], r.storage[index+1:]...)
@@ -81,7 +82,7 @@ func (r *InMemoryProfileRepository) FindByID(id uint64) (p Profile, err error) {
 
 	pPtr := r.findByID(id)
 	if pPtr == nil {
-		return Profile{}, NewNotFoundError("profile not found")
+		return Profile{}, errs.NewNotFoundError("profiles not found")
 	}
 
 	p = *pPtr
@@ -94,7 +95,7 @@ func (r *InMemoryProfileRepository) FindByUsernameAndPassword(username, password
 
 	pPtr := r.findByUsernameAndPassword(username, password)
 	if pPtr == nil {
-		return Profile{}, NewNotFoundError("profile not found")
+		return Profile{}, errs.NewNotFoundError("profiles not found")
 	}
 
 	p = *pPtr
@@ -103,10 +104,10 @@ func (r *InMemoryProfileRepository) FindByUsernameAndPassword(username, password
 
 func (r *InMemoryProfileRepository) GetSeveralOrderByScorePaginated(page, pageSize int) (p []Profile, err error) {
 	if page < 0 {
-		return nil, NewInvalidFormatError("invalid page")
+		return nil, errs.NewInvalidFormatError("invalid page")
 	}
 	if pageSize < 1 {
-		return nil, NewInvalidFormatError("invalid page size")
+		return nil, errs.NewInvalidFormatError("invalid page size")
 	}
 
 	r.rwMutex.Lock()

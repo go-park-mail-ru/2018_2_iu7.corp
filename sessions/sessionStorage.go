@@ -1,6 +1,8 @@
-package main
+package sessions
 
-import "net/http"
+import (
+	"net/http"
+)
 
 type SessionStorage interface {
 	GetSession(r *http.Request) (*Session, error)

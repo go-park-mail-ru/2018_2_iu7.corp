@@ -1,4 +1,4 @@
-package main
+package profiles
 
 type ProfileRepository interface {
 	SaveNew(p Profile) (err error)

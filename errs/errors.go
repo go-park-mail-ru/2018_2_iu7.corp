@@ -1,4 +1,4 @@
-package main
+package errs
 
 type ServerError struct {
 	error

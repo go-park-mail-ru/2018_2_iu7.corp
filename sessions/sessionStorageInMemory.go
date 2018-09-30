@@ -1,6 +1,7 @@
-package main
+package sessions
 
 import (
+	"2018_2_iu7.corp/errs"
 	"math/rand"
 	"net/http"
 	"sync"
@@ -44,7 +45,7 @@ func (s *InMemorySessionStorage) GetSession(r *http.Request) (*Session, error) {
 		}
 	}
 
-	return nil, NewNotFoundError("session not found")
+	return nil, errs.NewNotFoundError("sessions not found")
 }
 
 func (s *InMemorySessionStorage) SaveSession(w http.ResponseWriter, session Session) error {

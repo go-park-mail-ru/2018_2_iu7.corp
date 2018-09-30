@@ -1,6 +1,9 @@
-package main
+package handlers
 
 import (
+	"2018_2_iu7.corp/errs"
+	"2018_2_iu7.corp/profiles"
+	"2018_2_iu7.corp/sessions"
 	"encoding/json"
 	"errors"
 	"github.com/gorilla/mux"
@@ -18,7 +21,7 @@ func RegisterRequestHandler() http.Handler {
 			return
 		}
 
-		p := &Profile{}
+		p := &profiles.Profile{}
 		if err = p.ParseOnRegister(rb); err != nil {
 			writeErrorResponse(w, http.StatusBadRequest, err)
 			return
@@ -26,7 +29,7 @@ func RegisterRequestHandler() http.Handler {
 
 		if err = profileRepository.SaveNew(*p); err != nil {
 			switch err.(type) {
-			case *AlreadyExistsError:
+			case *errs.AlreadyExistsError:
 				writeErrorResponse(w, http.StatusConflict, err)
 			default:
 				writeErrorResponseEmpty(w, http.StatusInternalServerError)
@@ -46,7 +49,7 @@ func LoginRequestHandler() http.Handler {
 			return
 		}
 
-		p := &Profile{}
+		p := &profiles.Profile{}
 		if err = p.ParseOnLogin(rb); err != nil {
 			writeErrorResponse(w, http.StatusBadRequest, err)
 			return
@@ -55,7 +58,7 @@ func LoginRequestHandler() http.Handler {
 		exp, err := profileRepository.FindByUsernameAndPassword(p.Username, p.Password)
 		if err != nil {
 			switch err.(type) {
-			case *NotFoundError:
+			case *errs.NotFoundError:
 				writeErrorResponse(w, http.StatusNotFound, err)
 			default:
 				writeErrorResponseEmpty(w, http.StatusInternalServerError)
@@ -63,7 +66,7 @@ func LoginRequestHandler() http.Handler {
 			return
 		}
 
-		session := Session{ProfileID: exp.ID}
+		session := sessions.Session{ProfileID: exp.ID}
 		if err = sessionStorage.SaveSession(w, session); err != nil {
 			panic(err)
 		}
@@ -98,7 +101,7 @@ func ProfileRequestHandler() http.Handler {
 		p, err := profileRepository.FindByID(id)
 		if err != nil {
 			switch err.(type) {
-			case *NotFoundError:
+			case *errs.NotFoundError:
 				writeErrorResponse(w, http.StatusNotFound, err)
 			default:
 				writeErrorResponseEmpty(w, http.StatusInternalServerError)
@@ -117,7 +120,7 @@ func CurrentProfileRequestHandler() http.Handler {
 			panic(err)
 		}
 
-		var p Profile
+		var p profiles.Profile
 		if p, err = profileRepository.FindByID(session.ProfileID); err != nil {
 			panic(err)
 		}
@@ -138,9 +141,9 @@ func CurrentProfileRequestHandler() http.Handler {
 
 			if err = profileRepository.SaveExisting(p); err != nil {
 				switch err.(type) {
-				case *NotFoundError:
+				case *errs.NotFoundError:
 					writeErrorResponse(w, http.StatusNotFound, err)
-				case *AlreadyExistsError:
+				case *errs.AlreadyExistsError:
 					writeErrorResponse(w, http.StatusConflict, err)
 				default:
 					writeErrorResponseEmpty(w, http.StatusInternalServerError)
@@ -169,7 +172,7 @@ func LeaderBoardRequestHandler() http.Handler {
 
 		page, pageSize := int(p)-1, 10
 
-		var leaders []Profile
+		var leaders []profiles.Profile
 		if leaders, err = profileRepository.GetSeveralOrderByScorePaginated(page, pageSize); err != nil {
 			writeSuccessResponseEmpty(w, http.StatusInternalServerError)
 			return
