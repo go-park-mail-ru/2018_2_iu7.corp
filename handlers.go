@@ -3,9 +3,11 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"github.com/gorilla/mux"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 func RegisterRequestHandler() http.Handler {
@@ -86,7 +88,30 @@ func LogoutRequestHandler() http.Handler {
 
 func ProfileRequestHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//TODO
+		vars := mux.Vars(r)
+
+		idStr, ok := vars["id"]
+		if !ok {
+			panic(!ok)
+		}
+
+		id, err := strconv.ParseUint(idStr, 0, 64)
+		if err != nil {
+			panic(err)
+		}
+
+		p, err := profileRepository.FindByID(id)
+		if err != nil {
+			switch err.(type) {
+			case *NotFoundError:
+				writeErrorResponse(w, http.StatusNotFound, err)
+			default:
+				writeErrorResponseEmpty(w, http.StatusInternalServerError)
+			}
+			return
+		}
+
+		writeSuccessResponse(w, http.StatusOK, p.GetPublicAttributes())
 	})
 }
 
