@@ -79,7 +79,10 @@ func LoginRequestHandler() http.Handler {
 			ProfileID:  exp.ID,
 		}
 
-		sessionStorage.SaveSession(w, r, session)
+		if err = sessionStorage.SaveSession(w, r, session); err != nil {
+			panic(err)
+		}
+
 		writeSuccessResponseEmpty(w, http.StatusOK)
 	})
 }

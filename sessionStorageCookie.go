@@ -49,15 +49,12 @@ func (s *CookieSessionStorage) GetSession(r *http.Request) (*Session, error) {
 }
 
 func (s *CookieSessionStorage) SaveSession(w http.ResponseWriter, r *http.Request, session Session) error {
-	cookie, err := s.store.New(r, "session")
-	if err != nil {
-		return err
-	}
+	cookie, _ := s.store.New(r, "session")
 
 	cookie.Values["authorized"] = session.Authorized
 	cookie.Values["profile_id"] = session.ProfileID
 
-	if err = cookie.Save(r, w); err != nil {
+	if err := cookie.Save(r, w); err != nil {
 		return err
 	}
 
