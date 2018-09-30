@@ -96,7 +96,7 @@ type inMemorySessionStorageSequenceGenerator struct {
 func newInMemorySessionStorageSequenceGenerator(n int) *inMemorySessionStorageSequenceGenerator {
 	return &inMemorySessionStorageSequenceGenerator{
 		sequenceLen:  n,
-		allowedRunes: []rune("abcdefghijklmnopqrstuvwxyz1234567890@#$%^&*()_-=+"),
+		allowedRunes: []rune(`abcdefghijklmnopqrstuvwxyz1234567890@#$^&*()_-=+`),
 	}
 }
 
