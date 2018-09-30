@@ -100,7 +100,20 @@ func ProfileRequestHandler() http.Handler {
 
 func CurrentProfileRequestHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//TODO
+		session, err := sessionStorage.GetSession(r)
+		if err != nil {
+			panic(err)
+		}
+
+		var p Profile
+		if p, err = profileRepository.FindByID(session.ProfileID); err != nil {
+			panic(err)
+		}
+
+		if r.Method == http.MethodGet {
+			writeSuccessResponse(w, http.StatusOK, p)
+			return
+		}
 	})
 }
 
