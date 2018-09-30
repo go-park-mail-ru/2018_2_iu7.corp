@@ -20,14 +20,13 @@ func RegisterRequestHandler() http.Handler {
 			return
 		}
 
-		p, err := ParseProfileOnRegister(rb)
-		if err != nil {
+		p := &Profile{}
+		if err = p.ParseOnRegister(rb); err != nil {
 			writeErrorResponse(w, http.StatusBadRequest, err)
 			return
 		}
 
-		id, err := profileRepository.SaveNew(*p)
-		if err != nil {
+		if err = profileRepository.SaveNew(*p); err != nil {
 			switch err.(type) {
 			case *AlreadyExistsError:
 				writeErrorResponse(w, http.StatusConflict, err)
@@ -37,10 +36,7 @@ func RegisterRequestHandler() http.Handler {
 			return
 		}
 
-		resp := make(map[string]uint64)
-		resp["id"] = id
-
-		writeSuccessResponse(w, http.StatusCreated, resp)
+		writeSuccessResponseEmpty(w, http.StatusCreated)
 	})
 }
 
@@ -52,8 +48,8 @@ func LoginRequestHandler() http.Handler {
 			return
 		}
 
-		p, err := ParseProfileOnLogin(rb)
-		if err != nil {
+		p := &Profile{}
+		if err = p.ParseOnLogin(rb); err != nil {
 			writeErrorResponse(w, http.StatusBadRequest, err)
 			return
 		}
@@ -111,7 +107,7 @@ func CurrentProfileRequestHandler() http.Handler {
 		}
 
 		if r.Method == http.MethodGet {
-			writeSuccessResponse(w, http.StatusOK, p)
+			writeSuccessResponse(w, http.StatusOK, p.GetPrivateAttributes())
 			return
 		}
 	})

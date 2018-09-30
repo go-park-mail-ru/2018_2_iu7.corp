@@ -23,21 +23,21 @@ func NewInMemoryProfileRepository() *InMemoryProfileRepository {
 	}
 }
 
-func (r *InMemoryProfileRepository) SaveNew(p Profile) (id uint64, err error) {
+func (r *InMemoryProfileRepository) SaveNew(p Profile) (err error) {
 	r.rwMutex.Lock()
 	defer r.rwMutex.Unlock()
 
 	if r.findByUsername(p.Username) != nil {
-		return 0, NewAlreadyExistsError("username already taken")
+		return NewAlreadyExistsError("username already taken")
 	}
 	if r.findByEmail(p.Email) != nil {
-		return 0, NewAlreadyExistsError("profile with the email already exists")
+		return NewAlreadyExistsError("profile with the email already exists")
 	}
 
 	p.ID = r.idSequence.nextValue()
 	r.storage = append(r.storage, p)
 
-	return p.ID, nil
+	return nil
 }
 
 func (r *InMemoryProfileRepository) SaveExisting(p Profile) (err error) {

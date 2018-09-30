@@ -1,7 +1,7 @@
 package main
 
 type ProfileRepository interface {
-	SaveNew(p Profile) (id uint64, err error)
+	SaveNew(p Profile) (err error)
 	SaveExisting(p Profile) (err error)
 
 	DeleteByID(id uint64) (err error)

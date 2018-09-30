@@ -6,50 +6,46 @@ import (
 )
 
 type Profile struct {
-	ID         uint64 `json:"id"`
-	Email      string `json:"email"`
-	Username   string `json:"username"`
-	Password   string `json:"password"`
-	AvatarPath string `json:"avatar"`
-	Score      uint16 `json:"score"`
+	ID         uint64
+	Email      string
+	Username   string
+	Password   string
+	AvatarPath string
+	Score      uint16
 }
 
-func ParseProfileOnRegister(m map[string]interface{}) (p *Profile, err error) {
-	p = &Profile{}
-
+func (p *Profile) ParseOnRegister(m map[string]interface{}) error {
 	if len(m) != 3 {
-		return nil, NewInvalidFormatError("wrong number of attributes")
+		return NewInvalidFormatError("wrong number of attributes")
 	}
 
-	err = nil
+	var err error = nil
 	for k, v := range m {
 		switch k {
 		case "username":
 			p.Username, err = parseUsername(v)
 		case "email":
-			p.Password, err = parseEmail(v)
+			p.Email, err = parseEmail(v)
 		case "password":
 			p.Password, err = parsePassword(v)
 		default:
-			return nil, NewInvalidFormatError(fmt.Sprintf("unknown attribute: %s", k))
+			return NewInvalidFormatError(fmt.Sprintf("unknown attribute: %s", k))
 		}
 
 		if err != nil {
-			return nil, err
+			return err
 		}
 	}
 
-	return p, nil
+	return nil
 }
 
-func ParseProfileOnLogin(m map[string]interface{}) (p *Profile, err error) {
-	p = &Profile{}
-
+func (p *Profile) ParseOnLogin(m map[string]interface{}) error {
 	if len(m) != 2 {
-		return nil, NewInvalidFormatError("wrong number of attributes")
+		return NewInvalidFormatError("wrong number of attributes")
 	}
 
-	err = nil
+	var err error = nil
 	for k, v := range m {
 		switch k {
 		case "username":
@@ -57,15 +53,30 @@ func ParseProfileOnLogin(m map[string]interface{}) (p *Profile, err error) {
 		case "password":
 			p.Password, err = parsePassword(v)
 		default:
-			return nil, NewInvalidFormatError(fmt.Sprintf("unknown attribute: %s", k))
+			return NewInvalidFormatError(fmt.Sprintf("unknown attribute: %s", k))
 		}
 
 		if err != nil {
-			return nil, err
+			return err
 		}
 	}
 
-	return p, nil
+	return nil
+}
+
+func (p *Profile) GetPublicAttributes() map[string]interface{} {
+	return map[string]interface{}{
+		"id":       p.ID,
+		"username": p.Username,
+		"avatar":   p.AvatarPath,
+		"score":    p.Score,
+	}
+}
+
+func (p *Profile) GetPrivateAttributes() map[string]interface{} {
+	m := p.GetPublicAttributes()
+	m["email"] = p.Email
+	return m
 }
 
 func parseUsername(v interface{}) (string, error) {
