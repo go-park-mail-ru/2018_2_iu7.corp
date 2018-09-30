@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"regexp"
 )
 
@@ -43,4 +44,32 @@ func (p Profile) Validate() error {
 	}
 
 	return nil
+}
+
+func ParseProfileOnLogin(m map[string]interface{}) (*Profile, error) {
+	p := &Profile{}
+
+	if len(m) != 2 {
+		return nil, NewInvalidFormatError("wrong number of attributes")
+	}
+
+	var ok bool
+	for k, v := range m {
+		switch k {
+		case "username":
+			p.Username, ok = v.(string)
+			if !ok {
+				return nil, NewInvalidFormatError("invalid username: wrong type")
+			}
+		case "password":
+			p.Password, ok = v.(string)
+			if !ok {
+				return nil, NewInvalidFormatError("invalid password: wrong type")
+			}
+		default:
+			return nil, NewInvalidFormatError(fmt.Sprintf("unknown attribute: %s", k))
+		}
+	}
+
+	return p, nil
 }

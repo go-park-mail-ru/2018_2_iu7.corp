@@ -24,17 +24,17 @@ func createHandlers(staticPath, uploadsPath string) http.Handler {
 	handlers["/register"] = RequestHandlerInfo{
 		Methods:    []string{http.MethodPost},
 		Handler:    RegisterRequestHandler(),
-		Middleware: []mux.MiddlewareFunc{LoggingMiddleware},
+		Middleware: []mux.MiddlewareFunc{NotAuthenticatedMiddleware, LoggingMiddleware},
 	}
 	handlers["/login"] = RequestHandlerInfo{
 		Methods:    []string{http.MethodPost},
 		Handler:    LoginRequestHandler(),
-		Middleware: []mux.MiddlewareFunc{LoggingMiddleware},
+		Middleware: []mux.MiddlewareFunc{NotAuthenticatedMiddleware, LoggingMiddleware},
 	}
 	handlers["/logout"] = RequestHandlerInfo{
 		Methods:    []string{http.MethodPost},
 		Handler:    LogoutRequestHandler(),
-		Middleware: []mux.MiddlewareFunc{LoggingMiddleware},
+		Middleware: []mux.MiddlewareFunc{AuthenticatedMiddleware, LoggingMiddleware},
 	}
 	handlers["/profile/{id:[0-9]+}"] = RequestHandlerInfo{
 		Methods:    []string{http.MethodGet},

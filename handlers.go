@@ -51,7 +51,43 @@ func RegisterRequestHandler() http.Handler {
 
 func LoginRequestHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//TODO
+		session, err := sessionStore.Get(r, "session")
+		if err != nil {
+			session, _ = sessionStore.New(r, "session")
+		}
+
+		rb, err := parseRequestBody(r)
+		if err != nil {
+			writeErrorResponse(w, http.StatusBadRequest, err)
+			return
+		}
+
+		p, err := ParseProfileOnLogin(rb)
+		if err != nil {
+			writeErrorResponse(w, http.StatusBadRequest, err)
+			return
+		}
+
+		exp, err := profileRepository.FindByUsernameAndPassword(p.Username, p.Password)
+		if err != nil {
+			switch err.(type) {
+			case *NotFoundError:
+				writeErrorResponse(w, http.StatusNotFound, err)
+			default:
+				writeErrorResponse(w, http.StatusInternalServerError, internalServerError)
+			}
+			return
+		}
+
+		session.Values["authenticated"] = true
+		session.Values["profile_id"] = exp.ID
+
+		err = session.Save(r, w)
+		if err != nil {
+			panic(err)
+		}
+
+		writeSuccessResponseEmpty(w, http.StatusOK)
 	})
 }
 
@@ -80,6 +116,55 @@ func LeaderBoardRequestHandler() http.Handler {
 	})
 }
 
+func AuthenticatedMiddleware(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		session, err := sessionStore.Get(r, "session")
+		if err != nil {
+			session, _ = sessionStore.New(r, "session")
+			session.Values["authenticated"] = false
+			session.Save(r, w)
+			writeErrorResponseEmpty(w, http.StatusUnauthorized)
+			return
+		}
+
+		auth, ok := session.Values["authenticated"].(bool)
+		if !ok {
+			writeErrorResponse(w, http.StatusBadRequest, errors.New("invalid session cookie"))
+			return
+		}
+
+		if !auth {
+			writeErrorResponseEmpty(w, http.StatusUnauthorized)
+			return
+		}
+
+		h.ServeHTTP(w, r)
+	})
+}
+
+func NotAuthenticatedMiddleware(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		session, err := sessionStore.Get(r, "session")
+		if err != nil {
+			h.ServeHTTP(w, r)
+			return
+		}
+
+		auth, ok := session.Values["authenticated"].(bool)
+		if !ok {
+			writeErrorResponse(w, http.StatusBadRequest, errors.New("invalid session cookie"))
+			return
+		}
+
+		if auth {
+			writeErrorResponse(w, http.StatusForbidden, errors.New("already authorized"))
+			return
+		}
+
+		h.ServeHTTP(w, r)
+	})
+}
+
 func LoggingMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		status := 0
@@ -96,11 +181,31 @@ func LoggingMiddleware(h http.Handler) http.Handler {
 	})
 }
 
-func writeErrorResponse(w http.ResponseWriter, status int, err error) {
-	w.WriteHeader(status)
-	if _, err := w.Write([]byte(err.Error())); err != nil {
+func parseRequestBody(r *http.Request) (map[string]interface{}, error) {
+	rb, err := ioutil.ReadAll(r.Body)
+	if err != nil {
 		panic(err)
 	}
+	r.Body.Close()
+
+	var data map[string]interface{}
+	if err = json.Unmarshal(rb, &data); err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
+func writeErrorResponseEmpty(w http.ResponseWriter, status int) {
+	http.Error(w, "", status)
+}
+
+func writeSuccessResponseEmpty(w http.ResponseWriter, status int) {
+	w.WriteHeader(status)
+}
+
+func writeErrorResponse(w http.ResponseWriter, status int, err error) {
+	http.Error(w, err.Error(), status)
 }
 
 func writeSuccessResponse(w http.ResponseWriter, status int, resp interface{}) {
