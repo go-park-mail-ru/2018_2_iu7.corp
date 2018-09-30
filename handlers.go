@@ -160,7 +160,35 @@ func CurrentProfileRequestHandler() http.Handler {
 
 func LeaderBoardRequestHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//TODO
+		vars := mux.Vars(r)
+
+		idStr, ok := vars["page"]
+		if !ok {
+			panic(!ok)
+		}
+
+		p, err := strconv.ParseInt(idStr, 0, 32)
+		if err != nil {
+			panic(err)
+		}
+
+		page, pageSize := int(p)-1, 10
+
+		var leaders []Profile
+		if leaders, err = profileRepository.GetSeveralOrderByScorePaginated(page, pageSize); err != nil {
+			writeSuccessResponseEmpty(w, http.StatusInternalServerError)
+			return
+		}
+
+		leadersPublic := make([]map[string]interface{}, 0)
+		for _, leader := range leaders {
+			leadersPublic = append(leadersPublic, leader.GetPublicAttributes())
+		}
+
+		resp := make(map[string]interface{})
+		resp["profiles"] = leadersPublic
+
+		writeSuccessResponse(w, http.StatusOK, resp)
 	})
 }
 

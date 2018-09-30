@@ -9,5 +9,5 @@ type ProfileRepository interface {
 	FindByID(id uint64) (p Profile, err error)
 	FindByUsernameAndPassword(username, password string) (p Profile, err error)
 
-	GetAllOrderByScore(page, pageSize int) (p []Profile, err error)
+	GetSeveralOrderByScorePaginated(page, pageSize int) (p []Profile, err error)
 }

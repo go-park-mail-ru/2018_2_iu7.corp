@@ -101,7 +101,7 @@ func (r *InMemoryProfileRepository) FindByUsernameAndPassword(username, password
 	return p, nil
 }
 
-func (r *InMemoryProfileRepository) GetAllOrderByScore(page, pageSize int) (p []Profile, err error) {
+func (r *InMemoryProfileRepository) GetSeveralOrderByScorePaginated(page, pageSize int) (p []Profile, err error) {
 	if page < 0 {
 		return nil, NewInvalidFormatError("invalid page")
 	}
@@ -127,7 +127,7 @@ func (r *InMemoryProfileRepository) GetAllOrderByScore(page, pageSize int) (p []
 		lastIndex = n - 1
 	}
 
-	p = append(p, r.storage[firstIndex:lastIndex]...)
+	p = append(p, r.storage[firstIndex:lastIndex+1]...)
 
 	return p, nil
 }
