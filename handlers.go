@@ -84,7 +84,11 @@ func LoginRequestHandler() http.Handler {
 
 func LogoutRequestHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//TODO
+		session := Session{Authorized: false}
+		if err := sessionStorage.SaveSession(w, r, session); err != nil {
+			panic(err)
+		}
+		writeSuccessResponseEmpty(w, http.StatusOK)
 	})
 }
 
