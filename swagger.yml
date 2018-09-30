@@ -1,0 +1,47 @@
+openapi: 3.0.0
+
+info:
+  version: '1.0.0'
+  title: Strategio
+
+paths:
+  /register:
+    post:
+      summary: Регистрация нового пользователя
+      responses:
+        '201':
+          description: Пользователь успешно создан
+        '409':
+          description: Пользователь с указанными учетными данными уже существует
+        '400':
+          description: Неверный формат данных
+        '500':
+          description: Ошибка на сервере
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Profile'
+            example:
+              username: someuser
+              email: someuser@somemail.com
+              password: 1234
+components:
+  schemas:
+    Profile:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        email:
+          type: string
+        username:
+          type: string
+        password:
+          type: string
+        avatar:
+          type: string
+        score:
+          type: integer
+          format: int32
