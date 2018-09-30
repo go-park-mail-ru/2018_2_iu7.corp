@@ -14,24 +14,19 @@ var (
 
 func RegisterRequestHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		reqBody, err := ioutil.ReadAll(r.Body)
+		rb, err := parseRequestBody(r)
 		if err != nil {
-			panic(err)
-		}
-		r.Body.Close()
-
-		var p Profile
-		if err = json.Unmarshal(reqBody, &p); err != nil {
 			writeErrorResponse(w, http.StatusBadRequest, err)
 			return
 		}
 
-		if err = p.ValidateNew(); err != nil {
+		p, err := ParseProfileOnRegister(rb)
+		if err != nil {
 			writeErrorResponse(w, http.StatusBadRequest, err)
 			return
 		}
 
-		id, err := profileRepository.SaveNew(p)
+		id, err := profileRepository.SaveNew(*p)
 		if err != nil {
 			switch err.(type) {
 			case *AlreadyExistsError:

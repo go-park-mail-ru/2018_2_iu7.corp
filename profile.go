@@ -14,62 +14,99 @@ type Profile struct {
 	Score      uint16 `json:"score"`
 }
 
-func (p *Profile) ValidateNew() error {
-	if err := p.Validate(); err != nil {
-		return err
+func ParseProfileOnRegister(m map[string]interface{}) (p *Profile, err error) {
+	p = &Profile{}
+
+	if len(m) != 3 {
+		return nil, NewInvalidFormatError("wrong number of attributes")
 	}
 
-	p.ID = 0
-	p.AvatarPath = ""
-	p.Score = 0
+	err = nil
+	for k, v := range m {
+		switch k {
+		case "username":
+			p.Username, err = parseUsername(v)
+		case "email":
+			p.Password, err = parseEmail(v)
+		case "password":
+			p.Password, err = parsePassword(v)
+		default:
+			return nil, NewInvalidFormatError(fmt.Sprintf("unknown attribute: %s", k))
+		}
 
-	return nil
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return p, nil
 }
 
-func (p Profile) Validate() error {
-	if m, err := regexp.MatchString("^\\w+$", p.Username); err != nil {
-		panic(err)
-	} else if !m {
-		return NewInvalidFormatError("invalid username")
-	}
-
-	if m, err := regexp.MatchString("^.+@.+$", p.Email); err != nil {
-		panic(err)
-	} else if !m {
-		return NewInvalidFormatError("invalid email")
-	}
-
-	if p.Password == "" {
-		return NewInvalidFormatError("invalid password")
-	}
-
-	return nil
-}
-
-func ParseProfileOnLogin(m map[string]interface{}) (*Profile, error) {
-	p := &Profile{}
+func ParseProfileOnLogin(m map[string]interface{}) (p *Profile, err error) {
+	p = &Profile{}
 
 	if len(m) != 2 {
 		return nil, NewInvalidFormatError("wrong number of attributes")
 	}
 
-	var ok bool
+	err = nil
 	for k, v := range m {
 		switch k {
 		case "username":
-			p.Username, ok = v.(string)
-			if !ok {
-				return nil, NewInvalidFormatError("invalid username: wrong type")
-			}
+			p.Username, err = parseUsername(v)
 		case "password":
-			p.Password, ok = v.(string)
-			if !ok {
-				return nil, NewInvalidFormatError("invalid password: wrong type")
-			}
+			p.Password, err = parsePassword(v)
 		default:
 			return nil, NewInvalidFormatError(fmt.Sprintf("unknown attribute: %s", k))
+		}
+
+		if err != nil {
+			return nil, err
 		}
 	}
 
 	return p, nil
+}
+
+func parseUsername(v interface{}) (string, error) {
+	username, ok := v.(string)
+	if !ok {
+		return "", NewInvalidFormatError("invalid username: wrong type")
+	}
+
+	if m, err := regexp.MatchString("^\\w+$", username); err != nil {
+		panic(err)
+	} else if !m {
+		return "", NewInvalidFormatError("invalid username: pattern mismatch")
+	}
+
+	return username, nil
+}
+
+func parseEmail(v interface{}) (string, error) {
+	email, ok := v.(string)
+	if !ok {
+		return "", NewInvalidFormatError("invalid email: wrong type")
+	}
+
+	if m, err := regexp.MatchString("^.+@.+$", email); err != nil {
+		panic(err)
+	} else if !m {
+		return "", NewInvalidFormatError("invalid email: pattern mismatch")
+	}
+
+	return email, nil
+}
+
+func parsePassword(v interface{}) (string, error) {
+	password, ok := v.(string)
+	if !ok {
+		return "", NewInvalidFormatError("invalid password: wrong type")
+	}
+
+	if password == "" {
+		return "", NewInvalidFormatError("invalid password: empty")
+	}
+
+	return password, nil
 }
