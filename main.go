@@ -4,51 +4,73 @@ import (
 	"2018_2_iu7.corp/handlers"
 	"2018_2_iu7.corp/profiles"
 	"2018_2_iu7.corp/sessions"
+	"context"
+	"flag"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
 const (
-	DefaultAddress     = ":8080"
-	DefaultStaticPath  = "./static/"
-	DefaultUploadsPath = "./upload/"
+	DefaultAddress      = ":8080"
+	DefaultStaticPath   = "./static/"
+	DefaultUploadsPath  = "./upload/"
+	DefaultShutdownTime = 10
 )
 
 func main() {
-	config := handlers.ServerConfig{}
+	addressPtr := flag.String("address", DefaultAddress, "server address")
+	staticPathPtr := flag.String("static", DefaultStaticPath, "static files path")
+	uploadsPathPtr := flag.String("uploads", DefaultUploadsPath, "uploaded files path")
+	shutdownTimePtr := flag.Int("shutdown", DefaultShutdownTime, "server shutdown time [seconds]")
 
-	config.Address = os.Getenv("SERVER_ADDRESS")
-	if config.Address == "" {
-		config.Address = DefaultAddress
+	flag.Parse()
+
+	if len(flag.Args()) != 0 {
+		log.Fatal("unknown command-line arguments")
 	}
 
-	config.StaticPath = os.Getenv("SERVER_STATIC_PATH")
-	if config.StaticPath == "" {
-		config.StaticPath = DefaultStaticPath
-	}
-
-	config.UploadsPath = os.Getenv("SERVER_UPLOAD_PATH")
-	if config.UploadsPath == "" {
-		config.UploadsPath = DefaultUploadsPath
+	config := handlers.ServerConfig{
+		Address:     *addressPtr,
+		StaticPath:  *staticPathPtr,
+		UploadsPath: *uploadsPathPtr,
 	}
 
 	config.SessionStorage = sessions.NewInMemorySessionStorage()
 	if config.SessionStorage == nil {
-		log.Fatal("Session storage not created")
+		log.Fatal("session storage not created")
 	}
 
 	config.ProfileRepository = profiles.NewInMemoryProfileRepository()
 	if config.ProfileRepository == nil {
-		log.Fatal("Profile repository not created")
+		log.Fatal("profile repository not created")
 	}
 
 	srv := handlers.CreateServer(config)
 	if srv == nil {
-		log.Fatal("Server not started")
+		log.Fatal("server not created")
 	}
 
-	err := srv.ListenAndServe()
-	if err != nil {
-		log.Fatal(err.Error())
+	log.Printf("server is configured to start on %s", config.Address)
+
+	ch := make(chan os.Signal)
+	signal.Notify(ch, os.Interrupt, syscall.SIGINT|syscall.SIGTERM)
+
+	go func() {
+		err := srv.ListenAndServe()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	<-ch
+
+	shutdownTime := time.Duration(*shutdownTimePtr) * time.Second
+	ctx, _ := context.WithTimeout(context.Background(), shutdownTime)
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatal(err)
 	}
 }
