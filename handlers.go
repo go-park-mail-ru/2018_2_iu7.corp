@@ -261,14 +261,17 @@ func parseRequestBody(r *http.Request) (map[string]interface{}, error) {
 }
 
 func writeErrorResponseEmpty(w http.ResponseWriter, status int) {
+	addCrossOriginHeaders(&w)
 	http.Error(w, "", status)
 }
 
 func writeSuccessResponseEmpty(w http.ResponseWriter, status int) {
+	addCrossOriginHeaders(&w)
 	w.WriteHeader(status)
 }
 
 func writeErrorResponse(w http.ResponseWriter, status int, err error) {
+	addCrossOriginHeaders(&w)
 	http.Error(w, err.Error(), status)
 }
 
@@ -278,8 +281,20 @@ func writeSuccessResponse(w http.ResponseWriter, status int, resp interface{}) {
 		panic(err)
 	}
 
+	addCrossOriginHeaders(&w)
+	addContentTypeHeaders(&w, "application/json")
+
 	w.WriteHeader(status)
 	if _, err := w.Write(jsonResp); err != nil {
 		panic(err)
 	}
+}
+
+func addCrossOriginHeaders(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "strategio.now.sh")
+	(*w).Header().Set("Access-Control-Allow-Credentials", "true")
+}
+
+func addContentTypeHeaders(w *http.ResponseWriter, t string) {
+	(*w).Header().Set("Content-Type", t)
 }
