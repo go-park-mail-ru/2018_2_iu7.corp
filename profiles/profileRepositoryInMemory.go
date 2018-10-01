@@ -18,10 +18,18 @@ func NewInMemoryProfileRepository() *InMemoryProfileRepository {
 		return nil
 	}
 
-	return &InMemoryProfileRepository{
+	r := &InMemoryProfileRepository{
 		idSequence: *idSequence,
 		rwMutex:    &sync.RWMutex{},
 	}
+
+	r.SaveNew(Profile{
+		Username: "admin",
+		Email:    "admin@somemail.ru",
+		Password: "1234",
+	})
+
+	return r
 }
 
 func (r *InMemoryProfileRepository) SaveNew(p Profile) (err error) {
