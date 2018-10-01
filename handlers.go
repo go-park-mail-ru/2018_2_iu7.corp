@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 func RegisterRequestHandler() http.Handler {
@@ -229,6 +230,19 @@ func NotAuthenticatedMiddleware(h http.Handler) http.Handler {
 	})
 }
 
+func OptionsMiddleware(allow []string) mux.MiddlewareFunc {
+	return func(h http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.Method == http.MethodOptions {
+				w.Header().Set("Allow", strings.Join(allow, ","))
+				writeSuccessResponseEmpty(w, http.StatusOK)
+				return
+			}
+			h.ServeHTTP(w, r)
+		})
+	}
+}
+
 func LoggingMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		status := 0
@@ -291,8 +305,9 @@ func writeSuccessResponse(w http.ResponseWriter, status int, resp interface{}) {
 }
 
 func addCrossOriginHeaders(w *http.ResponseWriter) {
-	(*w).Header().Set("Access-Control-Allow-Origin", "strategio.now.sh")
+	(*w).Header().Set("Access-Control-Allow-Origin", "https://strategio.now.sh")
 	(*w).Header().Set("Access-Control-Allow-Credentials", "true")
+	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, HandleOptionsMiddleware")
 }
 
 func addContentTypeHeaders(w *http.ResponseWriter, t string) {

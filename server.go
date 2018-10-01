@@ -22,34 +22,56 @@ func createHandlers(staticPath, uploadsPath string) http.Handler {
 	handlers := make(map[string]RequestHandlerInfo)
 
 	handlers["/auth/register"] = RequestHandlerInfo{
-		Methods:    []string{http.MethodPost},
-		Handler:    RegisterRequestHandler(),
-		Middleware: []mux.MiddlewareFunc{NotAuthenticatedMiddleware, LoggingMiddleware},
+		Methods: []string{http.MethodPost, http.MethodOptions},
+		Handler: RegisterRequestHandler(),
+		Middleware: []mux.MiddlewareFunc{
+			NotAuthenticatedMiddleware,
+			OptionsMiddleware([]string{http.MethodPost, http.MethodOptions}),
+			LoggingMiddleware,
+		},
 	}
 	handlers["/auth/login"] = RequestHandlerInfo{
-		Methods:    []string{http.MethodPost},
-		Handler:    LoginRequestHandler(),
-		Middleware: []mux.MiddlewareFunc{NotAuthenticatedMiddleware, LoggingMiddleware},
+		Methods: []string{http.MethodPost, http.MethodOptions},
+		Handler: LoginRequestHandler(),
+		Middleware: []mux.MiddlewareFunc{
+			NotAuthenticatedMiddleware,
+			OptionsMiddleware([]string{http.MethodPost, http.MethodOptions}),
+			LoggingMiddleware,
+		},
 	}
 	handlers["/auth/logout"] = RequestHandlerInfo{
-		Methods:    []string{http.MethodPost},
-		Handler:    LogoutRequestHandler(),
-		Middleware: []mux.MiddlewareFunc{AuthenticatedMiddleware, LoggingMiddleware},
+		Methods: []string{http.MethodPost, http.MethodOptions},
+		Handler: LogoutRequestHandler(),
+		Middleware: []mux.MiddlewareFunc{
+			AuthenticatedMiddleware,
+			OptionsMiddleware([]string{http.MethodPost, http.MethodOptions}),
+			LoggingMiddleware,
+		},
 	}
 	handlers["/profiles/{id:[0-9]+}"] = RequestHandlerInfo{
-		Methods:    []string{http.MethodGet},
-		Handler:    ProfileRequestHandler(),
-		Middleware: []mux.MiddlewareFunc{LoggingMiddleware},
+		Methods: []string{http.MethodGet, http.MethodOptions},
+		Handler: ProfileRequestHandler(),
+		Middleware: []mux.MiddlewareFunc{
+			OptionsMiddleware([]string{http.MethodGet, http.MethodOptions}),
+			LoggingMiddleware,
+		},
 	}
 	handlers["/profiles/current"] = RequestHandlerInfo{
-		Methods:    []string{http.MethodGet, http.MethodPut},
-		Handler:    CurrentProfileRequestHandler(),
-		Middleware: []mux.MiddlewareFunc{AuthenticatedMiddleware, LoggingMiddleware},
+		Methods: []string{http.MethodGet, http.MethodPut, http.MethodOptions},
+		Handler: CurrentProfileRequestHandler(),
+		Middleware: []mux.MiddlewareFunc{
+			AuthenticatedMiddleware,
+			OptionsMiddleware([]string{http.MethodGet, http.MethodPut, http.MethodOptions}),
+			LoggingMiddleware,
+		},
 	}
 	handlers["/profiles/leaderboard/pages/{page:[0-9]+}"] = RequestHandlerInfo{
-		Methods:    []string{http.MethodGet},
-		Handler:    LeaderBoardRequestHandler(),
-		Middleware: []mux.MiddlewareFunc{LoggingMiddleware},
+		Methods: []string{http.MethodGet, http.MethodOptions},
+		Handler: LeaderBoardRequestHandler(),
+		Middleware: []mux.MiddlewareFunc{
+			OptionsMiddleware([]string{http.MethodGet, http.MethodOptions}),
+			LoggingMiddleware,
+		},
 	}
 
 	handlers["/static/"] = RequestHandlerInfo{
