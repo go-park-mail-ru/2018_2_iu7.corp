@@ -1,4 +1,4 @@
-package main
+package sessions
 
 import (
 	"2018_2_iu7.corp/errors"

@@ -1,4 +1,4 @@
-package main
+package sessions
 
 type Session struct {
 	Authorized bool

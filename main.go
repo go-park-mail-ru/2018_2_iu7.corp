@@ -1,68 +1,77 @@
 package main
 
 import (
+	"2018_2_iu7.corp/profiles"
+	"2018_2_iu7.corp/server"
+	"2018_2_iu7.corp/sessions"
+	"context"
+	"flag"
 	"log"
 	"os"
-	"sync"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
 const (
-	DefaultAddress     = ":8080"
-	DefaultStaticPath  = "./static/"
-	DefaultUploadsPath = "./upload/"
-)
-
-var (
-	sessionStorage    SessionStorage
-	profileRepository ProfileRepository
+	DefaultAddress      = ":8080"
+	DefaultStaticPath   = "./static/"
+	DefaultUploadsPath  = "./upload/"
+	DefaultShutdownTime = 10
 )
 
 func main() {
-	addr := os.Getenv("SERVER_ADDRESS")
-	if addr == "" {
-		addr = DefaultAddress
+	addressPtr := flag.String("addr", DefaultAddress, "server address")
+	staticPathPtr := flag.String("static", DefaultStaticPath, "static files path")
+	uploadsPathPtr := flag.String("uploads", DefaultUploadsPath, "uploaded files path")
+	sessionKeyPtr := flag.String("key", "", "session key")
+	shutdownTimePtr := flag.Int("shutdown", DefaultShutdownTime, "server shutdown time [seconds]")
+
+	flag.Parse()
+
+	if len(flag.Args()) != 0 {
+		log.Fatal("unknown command-line arguments")
 	}
 
-	staticPath := os.Getenv("SERVER_STATIC_PATH")
-	if staticPath == "" {
-		staticPath = DefaultStaticPath
+	config := &server.Config{
+		Address:     *addressPtr,
+		StaticPath:  *staticPathPtr,
+		UploadsPath: *uploadsPathPtr,
 	}
 
-	uploadPath := os.Getenv("SERVER_UPLOAD_PATH")
-	if uploadPath == "" {
-		uploadPath = DefaultUploadsPath
+	config.SessionStorage = sessions.NewCookieSessionStorage(*sessionKeyPtr)
+	if config.SessionStorage == nil {
+		log.Fatal("session storage not created")
 	}
 
-	srv := CreateServer(addr, staticPath, uploadPath)
+	config.ProfileRepository = profiles.NewInMemoryProfileRepository()
+	if config.ProfileRepository == nil {
+		log.Fatal("profile repository not created")
+	}
+
+	srv := server.CreateServer(config)
 	if srv == nil {
-		log.Fatal("Server not started")
+		log.Fatal("server not created")
 	}
 
-	sessionKey := os.Getenv("SESSION_KEY")
-	sessionStorage = NewCookieSessionStorage(sessionKey)
-	if sessionStorage == nil {
-		log.Fatal("Session storage not created")
-	}
+	log.Printf("server is configured to start on %s", config.Address)
 
-	profileRepository = NewInMemoryProfileRepository()
-	if profileRepository == nil {
-		log.Fatal("Profile repository not created")
-	}
+	ch := make(chan os.Signal)
+	signal.Notify(ch, os.Interrupt, syscall.SIGINT|syscall.SIGTERM)
 
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
-
-	var err error = nil
 	go func() {
-		err = srv.ListenAndServe()
+		err := srv.ListenAndServe()
+		if err != nil {
+			log.Fatal(err)
+		}
 	}()
 
-	if err != nil {
-		wg.Done()
-		log.Fatal(err.Error())
-	} else {
-		log.Printf("Server started at %s", addr)
-	}
+	<-ch
 
-	wg.Wait()
+	shutdownTime := time.Duration(*shutdownTimePtr) * time.Second
+	ctx, _ := context.WithTimeout(context.Background(), shutdownTime)
+
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatal(err)
+	}
 }

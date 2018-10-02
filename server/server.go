@@ -1,14 +1,32 @@
-package main
+package server
 
 import (
+	"2018_2_iu7.corp/profiles"
+	"2018_2_iu7.corp/sessions"
 	"github.com/gorilla/mux"
 	"net/http"
 )
 
-func CreateServer(addr, staticPath, uploadsPath string) *http.Server {
+var (
+	sessionStorage    sessions.SessionStorage
+	profileRepository profiles.ProfileRepository
+)
+
+type Config struct {
+	Address           string
+	StaticPath        string
+	UploadsPath       string
+	SessionStorage    sessions.SessionStorage
+	ProfileRepository profiles.ProfileRepository
+}
+
+func CreateServer(config *Config) *http.Server {
+	sessionStorage = config.SessionStorage
+	profileRepository = config.ProfileRepository
+
 	return &http.Server{
-		Addr:    addr,
-		Handler: createHandlers(staticPath, uploadsPath),
+		Addr:    config.Address,
+		Handler: createHandlers(config.StaticPath, config.UploadsPath),
 	}
 }
 

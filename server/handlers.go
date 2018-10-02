@@ -1,7 +1,9 @@
-package main
+package server
 
 import (
 	"2018_2_iu7.corp/errors"
+	"2018_2_iu7.corp/profiles"
+	"2018_2_iu7.corp/sessions"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"io/ioutil"
@@ -19,7 +21,7 @@ func RegisterRequestHandler() http.Handler {
 			return
 		}
 
-		p := &Profile{}
+		p := &profiles.Profile{}
 		if err = p.ParseOnRegister(rb); err != nil {
 			writeErrorResponse(w, http.StatusBadRequest, err)
 			return
@@ -47,7 +49,7 @@ func LoginRequestHandler() http.Handler {
 			return
 		}
 
-		p := &Profile{}
+		p := &profiles.Profile{}
 		if err = p.ParseOnLogin(rb); err != nil {
 			writeErrorResponse(w, http.StatusBadRequest, err)
 			return
@@ -64,7 +66,7 @@ func LoginRequestHandler() http.Handler {
 			return
 		}
 
-		session := Session{
+		session := sessions.Session{
 			Authorized: true,
 			ProfileID:  exp.ID,
 		}
@@ -79,7 +81,7 @@ func LoginRequestHandler() http.Handler {
 
 func LogoutRequestHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		session := Session{Authorized: false}
+		session := sessions.Session{Authorized: false}
 		if err := sessionStorage.SaveSession(w, r, session); err != nil {
 			panic(err)
 		}
@@ -123,7 +125,7 @@ func CurrentProfileRequestHandler() http.Handler {
 			panic(err)
 		}
 
-		var p Profile
+		var p profiles.Profile
 		if p, err = profileRepository.FindByID(session.ProfileID); err != nil {
 			panic(err)
 		}
@@ -175,7 +177,7 @@ func LeaderBoardRequestHandler() http.Handler {
 
 		page, pageSize := int(p)-1, 10
 
-		var leaders []Profile
+		var leaders []profiles.Profile
 		if leaders, err = profileRepository.GetSeveralOrderByScorePaginated(page, pageSize); err != nil {
 			writeSuccessResponseEmpty(w, http.StatusInternalServerError)
 			return
@@ -197,7 +199,7 @@ func AuthenticatedMiddleware(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, err := sessionStorage.GetSession(r)
 		if err != nil {
-			if err = sessionStorage.SaveSession(w, r, Session{Authorized: false}); err != nil {
+			if err = sessionStorage.SaveSession(w, r, sessions.Session{Authorized: false}); err != nil {
 				panic(err)
 			}
 			writeErrorResponseEmpty(w, http.StatusUnauthorized)
