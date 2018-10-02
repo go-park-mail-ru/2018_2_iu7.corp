@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"github.com/gorilla/mux"
 	"io/ioutil"
 	"log"
@@ -222,7 +221,7 @@ func NotAuthenticatedMiddleware(h http.Handler) http.Handler {
 		}
 
 		if session.Authorized {
-			writeErrorResponse(w, http.StatusForbidden, errors.New("already authorized"))
+			writeErrorResponse(w, http.StatusForbidden, NewAlreadyAuthorizedError("already authorized"))
 			return
 		}
 

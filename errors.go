@@ -5,6 +5,10 @@ type ServerError struct {
 	msg string
 }
 
+type AlreadyAuthorizedError struct {
+	ServerError
+}
+
 type NotFoundError struct {
 	ServerError
 }
@@ -15,6 +19,12 @@ type AlreadyExistsError struct {
 
 type InvalidFormatError struct {
 	ServerError
+}
+
+func NewAlreadyAuthorizedError(msg string) *AlreadyAuthorizedError {
+	err := &AlreadyAuthorizedError{}
+	err.msg = msg
+	return err
 }
 
 func NewNotFoundError(msg string) *NotFoundError {
