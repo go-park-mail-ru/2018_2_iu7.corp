@@ -1,6 +1,7 @@
 package main
 
 import (
+	"2018_2_iu7.corp/errors"
 	"github.com/gorilla/securecookie"
 	"github.com/gorilla/sessions"
 	"net/http"
@@ -37,12 +38,12 @@ func (s *CookieSessionStorage) GetSession(r *http.Request) (*Session, error) {
 
 	session.Authorized, ok = cookie.Values["authorized"].(bool)
 	if !ok {
-		return nil, NewInvalidFormatError("invalid session cookie")
+		return nil, errors.NewInvalidFormatError("invalid session cookie")
 	}
 
 	session.ProfileID, ok = cookie.Values["profile_id"].(uint64)
 	if !ok {
-		return nil, NewInvalidFormatError("invalid session cookie")
+		return nil, errors.NewInvalidFormatError("invalid session cookie")
 	}
 
 	return session, nil

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"2018_2_iu7.corp/errors"
 	"fmt"
 	"regexp"
 )
@@ -43,7 +44,7 @@ func (p *Profile) GetPrivateAttributes() map[string]interface{} {
 
 func (p *Profile) parseOnEdit(m map[string]interface{}, n int) error {
 	if n != -1 && len(m) != n {
-		return NewInvalidFormatError("wrong number of attributes")
+		return errors.NewInvalidFormatError("wrong number of attributes")
 	}
 
 	var err error = nil
@@ -56,7 +57,7 @@ func (p *Profile) parseOnEdit(m map[string]interface{}, n int) error {
 		case "password":
 			p.Password, err = parsePassword(v)
 		default:
-			return NewInvalidFormatError(fmt.Sprintf("unknown attribute: %s", k))
+			return errors.NewInvalidFormatError(fmt.Sprintf("unknown attribute: %s", k))
 		}
 
 		if err != nil {
@@ -69,7 +70,7 @@ func (p *Profile) parseOnEdit(m map[string]interface{}, n int) error {
 
 func (p *Profile) parseOnLogin(m map[string]interface{}) error {
 	if len(m) != 2 {
-		return NewInvalidFormatError("wrong number of attributes")
+		return errors.NewInvalidFormatError("wrong number of attributes")
 	}
 
 	var err error = nil
@@ -80,7 +81,7 @@ func (p *Profile) parseOnLogin(m map[string]interface{}) error {
 		case "password":
 			p.Password, err = parsePassword(v)
 		default:
-			return NewInvalidFormatError(fmt.Sprintf("unknown attribute: %s", k))
+			return errors.NewInvalidFormatError(fmt.Sprintf("unknown attribute: %s", k))
 		}
 
 		if err != nil {
@@ -94,13 +95,13 @@ func (p *Profile) parseOnLogin(m map[string]interface{}) error {
 func parseUsername(v interface{}) (string, error) {
 	username, ok := v.(string)
 	if !ok {
-		return "", NewInvalidFormatError("invalid username: wrong type")
+		return "", errors.NewInvalidFormatError("invalid username: wrong type")
 	}
 
 	if m, err := regexp.MatchString("^\\w+$", username); err != nil {
 		panic(err)
 	} else if !m {
-		return "", NewInvalidFormatError("invalid username: pattern mismatch")
+		return "", errors.NewInvalidFormatError("invalid username: pattern mismatch")
 	}
 
 	return username, nil
@@ -109,13 +110,13 @@ func parseUsername(v interface{}) (string, error) {
 func parseEmail(v interface{}) (string, error) {
 	email, ok := v.(string)
 	if !ok {
-		return "", NewInvalidFormatError("invalid email: wrong type")
+		return "", errors.NewInvalidFormatError("invalid email: wrong type")
 	}
 
 	if m, err := regexp.MatchString("^.+@.+$", email); err != nil {
 		panic(err)
 	} else if !m {
-		return "", NewInvalidFormatError("invalid email: pattern mismatch")
+		return "", errors.NewInvalidFormatError("invalid email: pattern mismatch")
 	}
 
 	return email, nil
@@ -124,11 +125,11 @@ func parseEmail(v interface{}) (string, error) {
 func parsePassword(v interface{}) (string, error) {
 	password, ok := v.(string)
 	if !ok {
-		return "", NewInvalidFormatError("invalid password: wrong type")
+		return "", errors.NewInvalidFormatError("invalid password: wrong type")
 	}
 
 	if password == "" {
-		return "", NewInvalidFormatError("invalid password: empty")
+		return "", errors.NewInvalidFormatError("invalid password: empty")
 	}
 
 	return password, nil

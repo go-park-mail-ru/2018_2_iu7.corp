@@ -1,6 +1,7 @@
 package main
 
 import (
+	"2018_2_iu7.corp/errors"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"io/ioutil"
@@ -26,7 +27,7 @@ func RegisterRequestHandler() http.Handler {
 
 		if err = profileRepository.SaveNew(*p); err != nil {
 			switch err.(type) {
-			case *AlreadyExistsError:
+			case *errors.AlreadyExistsError:
 				writeErrorResponse(w, http.StatusConflict, err)
 			default:
 				writeErrorResponseEmpty(w, http.StatusInternalServerError)
@@ -55,7 +56,7 @@ func LoginRequestHandler() http.Handler {
 		exp, err := profileRepository.FindByUsernameAndPassword(p.Username, p.Password)
 		if err != nil {
 			switch err.(type) {
-			case *NotFoundError:
+			case *errors.NotFoundError:
 				writeErrorResponse(w, http.StatusNotFound, err)
 			default:
 				writeErrorResponseEmpty(w, http.StatusInternalServerError)
@@ -103,7 +104,7 @@ func ProfileRequestHandler() http.Handler {
 		p, err := profileRepository.FindByID(id)
 		if err != nil {
 			switch err.(type) {
-			case *NotFoundError:
+			case *errors.NotFoundError:
 				writeErrorResponse(w, http.StatusNotFound, err)
 			default:
 				writeErrorResponseEmpty(w, http.StatusInternalServerError)
@@ -143,9 +144,9 @@ func CurrentProfileRequestHandler() http.Handler {
 
 			if err = profileRepository.SaveExisting(p); err != nil {
 				switch err.(type) {
-				case *NotFoundError:
+				case *errors.NotFoundError:
 					writeErrorResponse(w, http.StatusNotFound, err)
-				case *AlreadyExistsError:
+				case *errors.AlreadyExistsError:
 					writeErrorResponse(w, http.StatusConflict, err)
 				default:
 					writeErrorResponseEmpty(w, http.StatusInternalServerError)
@@ -221,7 +222,7 @@ func NotAuthenticatedMiddleware(h http.Handler) http.Handler {
 		}
 
 		if session.Authorized {
-			writeErrorResponse(w, http.StatusForbidden, NewAlreadyAuthorizedError("already authorized"))
+			writeErrorResponse(w, http.StatusForbidden, errors.NewAlreadyAuthorizedError("already authorized"))
 			return
 		}
 
