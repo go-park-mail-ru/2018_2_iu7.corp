@@ -1,0 +1,146 @@
+openapi: 3.0.0
+
+info:
+  version: "1.0.0"
+  title: Strategio
+
+paths:
+  /auth/register:
+    post:
+      summary: Регистрация нового пользователя
+      responses:
+        '201':
+          description: Пользователь успешно создан
+        '400':
+          description: Неверный формат данных
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "wrong number of attributes"
+        '403':
+          description: Пользователь в настоящий момент авторизован в системе
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "already authorized"
+        '409':
+          description: Пользователь с указанными учетными данными уже существует
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "username already taken"
+        '500':
+          description: Ошибка на сервере
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Profile"
+            example:
+              username: "someuser"
+              email: "someuser@somemail.com"
+              password: "1234"
+  /auth/login:
+    post:
+      summary: Авторизация пользователя в системе
+      responses:
+        '200':
+          description: Авторизация выполнена успешно
+        '400':
+          description: Неверный формат данных
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "wrong number of attributes"
+        '403':
+          description: Пользователь в настоящий момент авторизован в системе
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "already authorized"
+        '404':
+          description: Пользователь с указанными учетными данными не найден
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "profile not found"
+        '500':
+          description: Ошибка на сервере
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Profile"
+            example:
+              username: "someuser"
+              password: "1234"
+  /auth/logout:
+    post:
+      summary: Выход пользователя из системы
+      responses:
+        '200':
+          description: Выход успешно выполнен
+        '401':
+          description: В данный момент пользователь не авторизован в системе
+        '500':
+          description: Ошибка на сервере
+  /profiles/current:
+    get:
+      summary: Получение профиля текущего пользователя
+      responses:
+        '200':
+          description: Профиль текущего пользователя
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Profile"
+        '401':
+          description: В данный момент пользователь не авторизован в системе
+        '404':
+          description: Пользователь с указанными учетными данными не найден
+        '500':
+          description: Ошибка на сервере
+    put:
+      summary: Обновление профиля текущего пользователя
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Profile"
+      responses:
+        '200':
+          description: Профиль текущего пользователя успешно обновлен
+        '401':
+          description: В данный момент пользователь не авторизован в системе
+        '404':
+          description: Пользователь с указанными учетными данными не найден
+        '409':
+          description: Пользователь с указанными учетными данными уже существует
+        '500':
+          description: Ошибка на сервере
+
+components:
+  schemas:
+    Profile:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        email:
+          type: string
+        username:
+          type: string
+        password:
+          type: string
+        avatar:
+          type: string
+        score:
+          type: integer
+          format: int32
