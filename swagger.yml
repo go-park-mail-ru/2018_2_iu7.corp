@@ -128,12 +128,13 @@ paths:
     get:
       summary: Получение списка лидеров
       parameters:
-        - name: page
-          in: path
-          description: Номер страницы
-          required: true
+      - in: path
+        name: page
+        description: Номер страницы
+        required: true
+        schema:
           type: integer
-          format: int64
+          format: int32
       responses:
         '200':
           description: Список лидеров успешно получен
