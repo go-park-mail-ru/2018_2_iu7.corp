@@ -236,7 +236,8 @@ func OptionsMiddleware(allow []string) mux.MiddlewareFunc {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if r.Method == http.MethodOptions {
-				w.Header().Set("Allow", strings.Join(allow, ","))
+				addAllowHeader(&w, strings.Join(allow, ","))
+				addCrossOriginHeaders(&w)
 				writeSuccessResponseEmpty(w, http.StatusOK)
 				return
 			}
@@ -298,7 +299,7 @@ func writeSuccessResponse(w http.ResponseWriter, status int, resp interface{}) {
 	}
 
 	addCrossOriginHeaders(&w)
-	addContentTypeHeaders(&w, "application/json")
+	addContentTypeHeader(&w, "application/json")
 
 	w.WriteHeader(status)
 	if _, err := w.Write(jsonResp); err != nil {
@@ -309,9 +310,14 @@ func writeSuccessResponse(w http.ResponseWriter, status int, resp interface{}) {
 func addCrossOriginHeaders(w *http.ResponseWriter) {
 	(*w).Header().Set("Access-Control-Allow-Origin", "https://strategio.now.sh")
 	(*w).Header().Set("Access-Control-Allow-Credentials", "true")
+	(*w).Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
 	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, HandleOptionsMiddleware")
 }
 
-func addContentTypeHeaders(w *http.ResponseWriter, t string) {
+func addAllowHeader(w *http.ResponseWriter, methods string) {
+	(*w).Header().Set("Allow", methods)
+}
+
+func addContentTypeHeader(w *http.ResponseWriter, t string) {
 	(*w).Header().Set("Content-Type", t)
 }
