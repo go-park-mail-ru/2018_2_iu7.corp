@@ -124,6 +124,29 @@ paths:
           description: Пользователь с указанными учетными данными уже существует
         '500':
           description: Ошибка на сервере
+  /profiles/leaderboard/pages/{page}:
+    get:
+      summary: Получение списка лидеров
+      parameters:
+        - name: page
+          in: path
+          description: Номер страницы
+          required: true
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: Список лидеров успешно получен
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Profile"
+        '400':
+          description: Неверный формат входных данных
+        '500':
+          description: Ошибка на сервере
 
 components:
   schemas:

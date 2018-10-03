@@ -179,7 +179,12 @@ func LeaderBoardRequestHandler() http.Handler {
 
 		var leaders []profiles.Profile
 		if leaders, err = profileRepository.GetSeveralOrderByScorePaginated(page, pageSize); err != nil {
-			writeSuccessResponseEmpty(w, http.StatusInternalServerError)
+			switch err.(type) {
+			case *errors.InvalidFormatError:
+				writeErrorResponse(w, http.StatusBadRequest, err)
+			default:
+				writeErrorResponseEmpty(w, http.StatusInternalServerError)
+			}
 			return
 		}
 
