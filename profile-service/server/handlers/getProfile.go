@@ -8,6 +8,17 @@ import (
 
 func GetProfile(r repositories.ProfileRepository) context.Handler {
 	return func(c iris.Context) {
-		//TODO
+		id, err := c.Params().GetInt64("profileID")
+		if err != nil {
+			panic(err)
+		}
+
+		p, err := r.FindByID(id)
+		if err != nil {
+			writeError(c, err)
+			return
+		}
+
+		writeResponse(c, &p)
 	}
 }
