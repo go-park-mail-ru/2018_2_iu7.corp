@@ -5,6 +5,9 @@ import (
 )
 
 type ProfileRepository interface {
+	Open() (err error)
+	Close() (err error)
+
 	SaveNew(p models.Profile) (err error)
 	SaveExisting(p models.Profile) (err error)
 
