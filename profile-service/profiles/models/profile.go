@@ -1,4 +1,4 @@
-package profiles
+package models
 
 import (
 	"2018_2_iu7.corp/profile-service/errors"
@@ -33,3 +33,6 @@ func (p Profile) Validate() error {
 
 	return nil
 }
+
+//easyjson:json
+type Profiles []Profile

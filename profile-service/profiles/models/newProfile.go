@@ -1,4 +1,4 @@
-package profiles
+package models
 
 //easyjson:json
 type NewProfile struct {

@@ -1,12 +1,12 @@
 package server
 
 import (
-	"2018_2_iu7.corp/profile-service/profiles"
+	"2018_2_iu7.corp/profile-service/profiles/repositories"
 	"2018_2_iu7.corp/profile-service/server/handlers"
 	"github.com/gin-gonic/gin"
 )
 
-func CreateServer(r profiles.ProfileRepository) (*gin.Engine, error) {
+func CreateServer(r repositories.ProfileRepository) (*gin.Engine, error) {
 	router := gin.Default()
 
 	router.POST("/new", handlers.CreateProfile(r))
