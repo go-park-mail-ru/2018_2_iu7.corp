@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"strings"
 )
 
 const (
@@ -60,7 +61,16 @@ func (r *DBProfileRepository) Close() (err error) {
 func (r *DBProfileRepository) SaveNew(p models.Profile) (err error) {
 	m := &profileModel{}
 	m.Profile = p
-	r.db.Create(m)
+
+	errs := r.db.Create(m).GetErrors()
+	if len(errs) != 0 {
+		err := errs[0]
+		if isConstraintViolationError(err) {
+			return errors.NewConstraintViolationError("invalid profile: login or email is already taken")
+		}
+		return errors.NewServiceError()
+	}
+
 	return nil
 }
 
@@ -87,4 +97,8 @@ func (r *DBProfileRepository) GetSeveralOrderByScorePaginated(page, pageSize int
 type profileModel struct {
 	gorm.Model
 	models.Profile
+}
+
+func isConstraintViolationError(err error) bool {
+	return strings.Contains(err.Error(), "duplicate key value violates unique constraint")
 }

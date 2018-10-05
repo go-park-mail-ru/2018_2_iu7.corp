@@ -30,6 +30,8 @@ func writeError(c iris.Context, err error) {
 	switch err.(type) {
 	case *errors.InvalidFormatError:
 		c.StatusCode(http.StatusBadRequest)
+	case *errors.ConstraintViolationError:
+		c.StatusCode(http.StatusConflict)
 	default:
 		c.StatusCode(http.StatusInternalServerError)
 	}
