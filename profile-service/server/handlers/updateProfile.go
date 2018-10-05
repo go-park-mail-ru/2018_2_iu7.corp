@@ -1,9 +1,13 @@
 package handlers
 
 import (
-	"github.com/gin-gonic/gin"
+	"2018_2_iu7.corp/profile-service/profiles/repositories"
+	"github.com/kataras/iris"
+	"github.com/kataras/iris/context"
 )
 
-func UpdateProfile(c *gin.Context) {
-	//TODO
+func UpdateProfile(r repositories.ProfileRepository) context.Handler {
+	return func(c iris.Context) {
+		//TODO
+	}
 }

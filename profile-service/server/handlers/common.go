@@ -2,19 +2,19 @@ package handlers
 
 import (
 	"2018_2_iu7.corp/profile-service/errors"
-	"github.com/gin-gonic/gin"
+	"github.com/kataras/iris"
 	"io/ioutil"
 	"net/http"
 )
 
-func getRequestEntity(c *gin.Context, entity requestEntity) error {
-	rb, err := ioutil.ReadAll(c.Request.Body)
+func getRequestEntity(c iris.Context, e requestEntity) error {
+	rb, err := ioutil.ReadAll(c.Request().Body)
 	if err != nil {
-		panic(err)
+		return errors.NewServiceError()
 	}
-	c.Request.Body.Close()
+	c.Request().Body.Close()
 
-	err = entity.UnmarshalJSON(rb)
+	err = e.UnmarshalJSON(rb)
 	if err != nil {
 		return errors.NewInvalidFormatError("invalid request body: format mismatch")
 	}
@@ -22,25 +22,25 @@ func getRequestEntity(c *gin.Context, entity requestEntity) error {
 	return nil
 }
 
-func writeSuccess(c *gin.Context, status int) {
-	c.Writer.WriteHeader(status)
+func writeSuccess(c iris.Context) {
+	c.ResponseWriter().WriteHeader(http.StatusOK)
 }
 
-func writeError(c *gin.Context, err error) {
+func writeError(c iris.Context, err error) {
 	switch err.(type) {
 	case *errors.InvalidFormatError:
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.StatusCode(http.StatusBadRequest)
 	default:
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.StatusCode(http.StatusInternalServerError)
 	}
+	c.JSON(iris.Map{"error": err.Error()})
 }
 
-func writeResponse(c *gin.Context, v responseEntity) {
+func writeResponse(c iris.Context, v responseEntity) {
 	resp, err := v.MarshalJSON()
 	if err != nil {
 		panic(err)
 	}
-
-	c.Writer.WriteHeader(http.StatusOK)
-	c.Writer.Write(resp)
+	c.ResponseWriter().WriteHeader(http.StatusOK)
+	c.ResponseWriter().Write(resp)
 }

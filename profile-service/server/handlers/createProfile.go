@@ -3,12 +3,12 @@ package handlers
 import (
 	"2018_2_iu7.corp/profile-service/profiles/models"
 	"2018_2_iu7.corp/profile-service/profiles/repositories"
-	"github.com/gin-gonic/gin"
-	"net/http"
+	"github.com/kataras/iris"
+	"github.com/kataras/iris/context"
 )
 
-func CreateProfile(r repositories.ProfileRepository) gin.HandlerFunc {
-	return func(c *gin.Context) {
+func CreateProfile(r repositories.ProfileRepository) context.Handler {
+	return func(c iris.Context) {
 		var p models.NewProfile
 
 		if err := getRequestEntity(c, &p); err != nil {
@@ -21,6 +21,6 @@ func CreateProfile(r repositories.ProfileRepository) gin.HandlerFunc {
 			return
 		}
 
-		writeSuccess(c, http.StatusOK)
+		writeSuccess(c)
 	}
 }

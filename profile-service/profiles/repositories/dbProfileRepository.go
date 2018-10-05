@@ -3,27 +3,43 @@ package repositories
 import (
 	"2018_2_iu7.corp/profile-service/errors"
 	"2018_2_iu7.corp/profile-service/profiles/models"
+	"fmt"
 	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
-type profileModel struct {
-	gorm.Model
-	models.Profile
+const (
+	DefaultHost     = "localhost"
+	DefaultPort     = "5432"
+	DefaultUser     = "postgres"
+	DefaultPassword = ""
+	DefaultDB       = "profiles"
+)
+
+type ConnectionParams struct {
+	Host     string
+	Port     string
+	User     string
+	Password string
+	Database string
 }
 
 type DBProfileRepository struct {
-	connStr string
-	db      *gorm.DB
+	db         *gorm.DB
+	connParams ConnectionParams
 }
 
-func NewDBProfileRepository(connStr string) *DBProfileRepository {
+func NewDBProfileRepository(connParams *ConnectionParams) *DBProfileRepository {
 	return &DBProfileRepository{
-		connStr: connStr,
+		connParams: *connParams,
 	}
 }
 
 func (r *DBProfileRepository) Open() (err error) {
-	db, err := gorm.Open("postgres", r.connStr)
+	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		r.connParams.Host, r.connParams.Port, r.connParams.User, r.connParams.Password, r.connParams.Database)
+
+	db, err := gorm.Open("postgres", connStr)
 	if err != nil {
 		panic(err)
 	}
@@ -42,7 +58,10 @@ func (r *DBProfileRepository) Close() (err error) {
 }
 
 func (r *DBProfileRepository) SaveNew(p models.Profile) (err error) {
-	return nil //TODO
+	m := &profileModel{}
+	m.Profile = p
+	r.db.Create(m)
+	return nil
 }
 
 func (r *DBProfileRepository) SaveExisting(p models.Profile) (err error) {
@@ -63,4 +82,9 @@ func (r *DBProfileRepository) FindByUsernameAndPassword(username, password strin
 
 func (r *DBProfileRepository) GetSeveralOrderByScorePaginated(page, pageSize int32) (p models.Profiles, err error) {
 	return models.Profiles{}, nil //TODO
+}
+
+type profileModel struct {
+	gorm.Model
+	models.Profile
 }
