@@ -43,6 +43,7 @@ func writeResponse(c iris.Context, v responseEntity) {
 	if err != nil {
 		panic(err)
 	}
+	c.ResponseWriter().Header().Set("Content-Type", "application/json")
 	c.ResponseWriter().WriteHeader(http.StatusOK)
 	c.ResponseWriter().Write(resp)
 }
