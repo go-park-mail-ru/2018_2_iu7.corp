@@ -103,7 +103,7 @@ func (r *DBProfileRepository) FindByUsernameAndPassword(username, password strin
 	return models.Profile{}, nil //TODO
 }
 
-func (r *DBProfileRepository) GetSeveralOrderByScorePaginated(page, pageSize uint32) (p models.Profiles, err error) {
+func (r *DBProfileRepository) GetSeveralOrderByScorePaginated(page, pageSize int) (p models.Profiles, err error) {
 	return models.Profiles{}, nil //TODO
 }
 

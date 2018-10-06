@@ -8,6 +8,17 @@ import (
 
 func DeleteProfile(r repositories.ProfileRepository) context.Handler {
 	return func(c iris.Context) {
-		//TODO
+		id, err := getProfileID(c)
+		if err != nil {
+			writeError(c, err)
+			return
+		}
+
+		if err = r.DeleteByID(id); err != nil {
+			writeError(c, err)
+			return
+		}
+
+		writeSuccess(c)
 	}
 }

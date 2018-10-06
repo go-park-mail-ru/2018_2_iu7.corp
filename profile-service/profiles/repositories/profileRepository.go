@@ -16,5 +16,5 @@ type ProfileRepository interface {
 	FindByID(id uint32) (p models.Profile, err error)
 	FindByUsernameAndPassword(username, password string) (p models.Profile, err error)
 
-	GetSeveralOrderByScorePaginated(page, pageSize uint32) (p models.Profiles, err error)
+	GetSeveralOrderByScorePaginated(page, pageSize int) (p models.Profiles, err error)
 }

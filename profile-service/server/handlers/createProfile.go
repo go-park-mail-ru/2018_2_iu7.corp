@@ -10,7 +10,6 @@ import (
 func CreateProfile(r repositories.ProfileRepository) context.Handler {
 	return func(c iris.Context) {
 		var np models.ProfileData
-
 		if err := getRequestEntity(c, &np); err != nil {
 			writeError(c, err)
 			return
