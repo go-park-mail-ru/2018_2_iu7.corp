@@ -7,11 +7,11 @@ import (
 
 //easyjson:json
 type Profile struct {
-	ProfileID int64  `json:"id"       gorm:"PRIMARY_KEY;AUTO_INCREMENT"`
+	ProfileID uint32 `json:"id"       gorm:"-"`
 	Username  string `json:"username" gorm:"type:varchar(20);unique"`
 	Password  string `json:"-"        gorm:"type:varchar(50)"`
 	Email     string `json:"email"    gorm:"type:varchar(100);unique"`
-	Score     int32  `json:"score"    gorm:"DEFAULT:0"`
+	Score     uint32 `json:"score"    gorm:"DEFAULT:0"`
 }
 
 func (p Profile) Validate() error {

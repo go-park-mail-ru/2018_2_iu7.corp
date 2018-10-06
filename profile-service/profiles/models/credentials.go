@@ -1,16 +1,14 @@
 package models
 
 //easyjson:json
-type NewProfile struct {
+type Credentials struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
-	Email    string `json:"email"`
 }
 
-func (p NewProfile) Get() Profile {
-	return Profile{
+func (p *Credentials) AsProfile() (*Profile, error) {
+	return &Profile{
 		Username: p.Username,
 		Password: p.Password,
-		Email:    p.Email,
-	}
+	}, nil
 }

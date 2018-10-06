@@ -78,19 +78,32 @@ func (r *DBProfileRepository) SaveExisting(p models.Profile) (err error) {
 	return nil //TODO
 }
 
-func (r *DBProfileRepository) DeleteByID(id int64) (err error) {
+func (r *DBProfileRepository) DeleteByID(id uint32) (err error) {
 	return nil //TODO
 }
 
-func (r *DBProfileRepository) FindByID(id int64) (p models.Profile, err error) {
-	return models.Profile{}, nil //TODO
+func (r *DBProfileRepository) FindByID(id uint32) (p models.Profile, err error) {
+	qModel := &profileModel{}
+	qModel.ID = uint(id)
+
+	var pModel profileModel
+	if errs := r.db.Where(qModel).First(&pModel).GetErrors(); len(errs) != 0 {
+		err := errs[0]
+		if isNotFoundError(err) {
+			return pModel.Profile, errors.NewNotFoundError("profile not found")
+		}
+		return pModel.Profile, errors.NewServiceError()
+	}
+
+	pModel.ProfileID = uint32(pModel.ID)
+	return pModel.Profile, nil
 }
 
 func (r *DBProfileRepository) FindByUsernameAndPassword(username, password string) (p models.Profile, err error) {
 	return models.Profile{}, nil //TODO
 }
 
-func (r *DBProfileRepository) GetSeveralOrderByScorePaginated(page, pageSize int32) (p models.Profiles, err error) {
+func (r *DBProfileRepository) GetSeveralOrderByScorePaginated(page, pageSize uint32) (p models.Profiles, err error) {
 	return models.Profiles{}, nil //TODO
 }
 
@@ -101,4 +114,8 @@ type profileModel struct {
 
 func isConstraintViolationError(err error) bool {
 	return strings.Contains(err.Error(), "duplicate key value violates unique constraint")
+}
+
+func isNotFoundError(err error) bool {
+	return strings.Contains(err.Error(), "record not found")
 }

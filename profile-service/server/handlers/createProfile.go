@@ -9,14 +9,20 @@ import (
 
 func CreateProfile(r repositories.ProfileRepository) context.Handler {
 	return func(c iris.Context) {
-		var p models.NewProfile
+		var np models.ProfileData
 
-		if err := getRequestEntity(c, &p); err != nil {
+		if err := getRequestEntity(c, &np); err != nil {
 			writeError(c, err)
 			return
 		}
 
-		if err := r.SaveNew(p.Get()); err != nil {
+		p := np.AsProfile()
+		if err := p.Validate(); err != nil {
+			writeError(c, err)
+			return
+		}
+
+		if err := r.SaveNew(p); err != nil {
 			writeError(c, err)
 			return
 		}

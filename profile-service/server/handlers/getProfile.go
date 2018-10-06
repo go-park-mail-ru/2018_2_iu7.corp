@@ -8,9 +8,10 @@ import (
 
 func GetProfile(r repositories.ProfileRepository) context.Handler {
 	return func(c iris.Context) {
-		id, err := c.Params().GetInt64("profileID")
+		id, err := getProfileID(c)
 		if err != nil {
-			panic(err)
+			writeError(c, err)
+			return
 		}
 
 		p, err := r.FindByID(id)

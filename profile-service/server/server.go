@@ -19,9 +19,9 @@ func CreateServer(r repositories.ProfileRepository) (*iris.Application, error) {
 	server.Use(rLog)
 
 	server.Post("/new", handlers.CreateProfile(r))
-	server.Get("/{profileID:long}", handlers.GetProfile(r))
-	server.Put("/{profileID:long}", handlers.UpdateProfile(r))
-	server.Delete("/{profileID:long}", handlers.DeleteProfile(r))
+	server.Get("/{profileID:int}", handlers.GetProfile(r))
+	server.Put("/{profileID:int}", handlers.UpdateProfile(r))
+	server.Delete("/{profileID:int}", handlers.DeleteProfile(r))
 	server.Get("/leaders", handlers.GetLeaders(r))
 
 	return server, nil

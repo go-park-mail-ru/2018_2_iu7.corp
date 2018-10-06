@@ -1,14 +1,16 @@
 package models
 
 //easyjson:json
-type AuthProfile struct {
+type ProfileData struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
+	Email    string `json:"email"`
 }
 
-func (p *AuthProfile) Get() (*Profile, error) {
-	return &Profile{
+func (p ProfileData) AsProfile() Profile {
+	return Profile{
 		Username: p.Username,
 		Password: p.Password,
-	}, nil
+		Email:    p.Email,
+	}
 }

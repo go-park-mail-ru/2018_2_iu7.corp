@@ -5,6 +5,7 @@ import (
 	"github.com/kataras/iris"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 )
 
 func getRequestEntity(c iris.Context, e requestEntity) error {
@@ -32,6 +33,8 @@ func writeError(c iris.Context, err error) {
 		c.StatusCode(http.StatusBadRequest)
 	case *errors.ConstraintViolationError:
 		c.StatusCode(http.StatusConflict)
+	case *errors.NotFoundError:
+		c.StatusCode(http.StatusNotFound)
 	default:
 		c.StatusCode(http.StatusInternalServerError)
 	}
@@ -46,4 +49,12 @@ func writeResponse(c iris.Context, v responseEntity) {
 	c.ResponseWriter().Header().Set("Content-Type", "application/json")
 	c.ResponseWriter().WriteHeader(http.StatusOK)
 	c.ResponseWriter().Write(resp)
+}
+
+func getProfileID(c iris.Context) (uint32, error) {
+	id, err := strconv.ParseUint(c.Params().Get("profileID"), 0, 32)
+	if err != nil {
+		return 0, errors.NewInvalidFormatError("invalid id: type mismatch")
+	}
+	return uint32(id), nil
 }
