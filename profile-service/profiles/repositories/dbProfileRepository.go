@@ -102,7 +102,18 @@ func (r *DBProfileRepository) FindByID(id uint32) (p models.Profile, err error) 
 }
 
 func (r *DBProfileRepository) FindByUsernameAndPassword(username, password string) (p models.Profile, err error) {
-	return models.Profile{}, nil //TODO
+	qModel := &profileModel{}
+	qModel.Username = username
+	qModel.Password = password
+
+	var pModel profileModel
+	if errs := r.db.Where(qModel).First(&pModel).GetErrors(); len(errs) != 0 {
+		err := classifyError(errs[0])
+		return pModel.Profile, err
+	}
+
+	pModel.ProfileID = uint32(pModel.ID)
+	return pModel.Profile, nil
 }
 
 func (r *DBProfileRepository) GetSeveralOrderByScorePaginated(page, pageSize int) (p models.Profiles, err error) {
