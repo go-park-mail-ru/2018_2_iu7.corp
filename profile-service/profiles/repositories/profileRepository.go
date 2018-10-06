@@ -9,7 +9,7 @@ type ProfileRepository interface {
 	Close() (err error)
 
 	SaveNew(p models.Profile) (err error)
-	SaveExisting(p models.Profile) (err error)
+	SaveExisting(id uint32, u models.ProfileDataUpdate) (err error)
 
 	DeleteByID(id uint32) (err error)
 

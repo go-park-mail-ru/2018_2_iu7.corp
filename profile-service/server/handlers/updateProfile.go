@@ -15,16 +15,13 @@ func UpdateProfile(r repositories.ProfileRepository) context.Handler {
 			return
 		}
 
-		var np models.ProfileData
-		if err := getRequestEntity(c, &np); err != nil {
+		var u models.ProfileDataUpdate
+		if err := getRequestEntity(c, &u); err != nil {
 			writeError(c, err)
 			return
 		}
 
-		p := np.AsProfile()
-		p.ProfileID = id
-
-		if err = r.SaveExisting(p); err != nil {
+		if err = r.SaveExisting(id, u); err != nil {
 			writeError(c, err)
 			return
 		}

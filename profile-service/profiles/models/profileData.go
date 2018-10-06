@@ -14,3 +14,6 @@ func (p ProfileData) AsProfile() Profile {
 		Email:    p.Email,
 	}
 }
+
+//easyjson:json
+type ProfileDataUpdate map[string]interface{}

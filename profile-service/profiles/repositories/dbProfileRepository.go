@@ -64,18 +64,23 @@ func (r *DBProfileRepository) SaveNew(p models.Profile) (err error) {
 
 	errs := r.db.Create(m).GetErrors()
 	if len(errs) != 0 {
-		err := errs[0]
-		if isConstraintViolationError(err) {
-			return errors.NewConstraintViolationError("invalid profile: login or email is already taken")
-		}
-		return errors.NewServiceError()
+		err := classifyError(errs[0])
+		return err
 	}
 
 	return nil
 }
 
-func (r *DBProfileRepository) SaveExisting(p models.Profile) (err error) {
-	return nil //TODO
+func (r *DBProfileRepository) SaveExisting(id uint32, u models.ProfileDataUpdate) (err error) {
+	qModel := &profileModel{}
+	qModel.ID = uint(id)
+
+	if errs := r.db.Where(qModel).Update(u).GetErrors(); len(errs) != 0 {
+		err := classifyError(errs[0])
+		return err
+	}
+
+	return nil
 }
 
 func (r *DBProfileRepository) DeleteByID(id uint32) (err error) {
@@ -88,11 +93,8 @@ func (r *DBProfileRepository) FindByID(id uint32) (p models.Profile, err error) 
 
 	var pModel profileModel
 	if errs := r.db.Where(qModel).First(&pModel).GetErrors(); len(errs) != 0 {
-		err := errs[0]
-		if isNotFoundError(err) {
-			return pModel.Profile, errors.NewNotFoundError("profile not found")
-		}
-		return pModel.Profile, errors.NewServiceError()
+		err := classifyError(errs[0])
+		return pModel.Profile, err
 	}
 
 	pModel.ProfileID = uint32(pModel.ID)
@@ -112,10 +114,21 @@ type profileModel struct {
 	models.Profile
 }
 
-func isConstraintViolationError(err error) bool {
-	return strings.Contains(err.Error(), "duplicate key value violates unique constraint")
-}
+func classifyError(err error) error {
+	msg := err.Error()
 
-func isNotFoundError(err error) bool {
-	return strings.Contains(err.Error(), "record not found")
+	if strings.Contains(msg, "duplicate key") {
+		if strings.Contains(msg, "username") {
+			return errors.NewConstraintViolationError("invalid username: already in use")
+		}
+		if strings.Contains(msg, "email") {
+			return errors.NewConstraintViolationError("invalid username: already in use")
+		}
+	}
+
+	if msg == "record not found" {
+		return errors.NewNotFoundError("profile not found")
+	}
+
+	return errors.NewServiceError()
 }
