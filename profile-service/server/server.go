@@ -23,6 +23,7 @@ func CreateServer(r repositories.ProfileRepository) (*iris.Application, error) {
 	server.Put("/{profileID:int}", handlers.UpdateProfile(r))
 	server.Delete("/{profileID:int}", handlers.DeleteProfile(r))
 	server.Get("/leaders", handlers.GetLeaders(r))
+	server.Post("/credentials/check", handlers.CheckCredentials(r))
 
 	return server, nil
 }

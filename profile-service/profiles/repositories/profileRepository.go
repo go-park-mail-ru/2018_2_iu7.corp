@@ -14,7 +14,7 @@ type ProfileRepository interface {
 	DeleteByID(id uint32) (err error)
 
 	FindByID(id uint32) (p models.Profile, err error)
-	FindByUsernameAndPassword(username, password string) (p models.Profile, err error)
+	FindByCredentials(cr models.Credentials) (p models.Profile, err error)
 
 	GetSeveralOrderByScorePaginated(page, pageSize int) (p models.Profiles, err error)
 }

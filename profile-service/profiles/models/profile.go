@@ -36,3 +36,8 @@ func (p Profile) Validate() error {
 
 //easyjson:json
 type Profiles []Profile
+
+//easyjson:json
+type ProfileID struct {
+	Value uint32 `json:"profile_id"`
+}

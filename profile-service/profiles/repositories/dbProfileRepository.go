@@ -101,10 +101,10 @@ func (r *DBProfileRepository) FindByID(id uint32) (p models.Profile, err error) 
 	return pModel.Profile, nil
 }
 
-func (r *DBProfileRepository) FindByUsernameAndPassword(username, password string) (p models.Profile, err error) {
+func (r *DBProfileRepository) FindByCredentials(cr models.Credentials) (p models.Profile, err error) {
 	qModel := &profileModel{}
-	qModel.Username = username
-	qModel.Password = password
+	qModel.Username = cr.Username
+	qModel.Password = cr.Password
 
 	var pModel profileModel
 	if errs := r.db.Where(qModel).First(&pModel).GetErrors(); len(errs) != 0 {
