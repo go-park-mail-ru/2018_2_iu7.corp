@@ -15,6 +15,7 @@ const (
 	DefaultUser     = "postgres"
 	DefaultPassword = ""
 	DefaultDB       = "profiles"
+	DefaultPageSize = 10
 )
 
 type ConnectionParams struct {
@@ -126,7 +127,38 @@ func (r *DBProfileRepository) FindByCredentials(cr models.Credentials) (p models
 }
 
 func (r *DBProfileRepository) GetSeveralOrderByScorePaginated(page, pageSize int) (p models.Profiles, err error) {
-	return models.Profiles{}, nil //TODO
+	pf := make(models.Profiles, 0)
+
+	if page < 1 {
+		return pf, errors.NewInvalidFormatError("invalid page: should be 1 or greater")
+	}
+	if pageSize < 1 {
+		return pf, errors.NewInvalidFormatError("invalid page size: should be 1 or greater")
+	}
+
+	offset := (page - 1) * pageSize
+
+	rows, err := r.db.Limit(pageSize).Offset(offset).Order("score", true).Rows()
+	if err != nil {
+		return pf, classifyError(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var pModel profileModel
+		if err := r.db.ScanRows(rows, &pModel); err != nil {
+			return pf, classifyError(err)
+		}
+
+		pModel.ProfileID = uint32(pModel.ID)
+		pf = append(pf, pModel.Profile)
+	}
+
+	if err := rows.Err(); err != nil {
+		return pf, classifyError(err)
+	}
+
+	return pf, nil
 }
 
 type profileModel struct {
