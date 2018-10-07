@@ -84,7 +84,16 @@ func (r *DBProfileRepository) SaveExisting(id uint32, u models.ProfileDataUpdate
 }
 
 func (r *DBProfileRepository) DeleteByID(id uint32) (err error) {
-	return nil //TODO
+	qModel := &profileModel{}
+	qModel.ID = uint(id)
+
+	// TODO Error: no errors when record not found
+	if errs := r.db.Delete(&qModel).GetErrors(); len(errs) != 0 {
+		err := classifyError(errs[0])
+		return err
+	}
+
+	return nil
 }
 
 func (r *DBProfileRepository) FindByID(id uint32) (p models.Profile, err error) {
