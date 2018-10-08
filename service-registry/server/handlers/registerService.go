@@ -12,7 +12,7 @@ func RegisterService(r repositories.ServiceRepository) context.Handler {
 		addr := c.RemoteAddr()
 
 		if err := r.RegisterService(name, addr); err != nil {
-			writeErrorJSON(c, err)
+			writeResponseError(c, err)
 			return
 		}
 

@@ -12,7 +12,7 @@ func UpdateService(r repositories.ServiceRepository) context.Handler {
 		addr := c.RemoteAddr()
 
 		if err := r.UpdateService(name, addr); err != nil {
-			writeErrorJSON(c, err)
+			writeResponseError(c, err)
 			return
 		}
 

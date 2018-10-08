@@ -1,14 +1,9 @@
 package handlers
 
-type Entity interface {
-	MarshalJSON() ([]byte, error)
+type RequestEntity interface {
 	UnmarshalJSON([]byte) error
 }
 
-type RequestEntity interface {
-	Entity
-}
-
 type ResponseEntity interface {
-	Entity
+	MarshalJSON() ([]byte, error)
 }

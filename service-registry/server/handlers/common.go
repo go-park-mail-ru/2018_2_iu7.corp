@@ -26,7 +26,7 @@ func writeResponseOK(c iris.Context) {
 	c.ResponseWriter().WriteHeader(http.StatusOK)
 }
 
-func writeErrorJSON(c iris.Context, err error) {
+func writeResponseError(c iris.Context, err error) {
 	switch err.(type) {
 	default:
 		c.StatusCode(http.StatusInternalServerError)

@@ -8,6 +8,12 @@ import (
 
 func GetServices(r repositories.ServiceRepository) context.Handler {
 	return func(c iris.Context) {
-		//TODO
+		info, err := r.GetAllServicesInfo()
+		if err != nil {
+			writeResponseError(c, err)
+			return
+		}
+
+		writeResponseJSON(c, info)
 	}
 }

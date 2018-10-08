@@ -12,7 +12,7 @@ func UnregisterService(r repositories.ServiceRepository) context.Handler {
 		addr := c.RemoteAddr()
 
 		if err := r.UnregisterService(name, addr); err != nil {
-			writeErrorJSON(c, err)
+			writeResponseError(c, err)
 			return
 		}
 
