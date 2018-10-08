@@ -8,10 +8,9 @@ import (
 )
 
 const (
-	DefaultExpireTime = 10
-
 	ServiceStatusUP   = "UP"
 	ServiceStatusDOWN = "DOWN"
+	DefaultExpireTime = 60
 )
 
 type serviceInfo struct {
@@ -27,9 +26,9 @@ type InMemoryServiceRepository struct {
 
 func NewInMemoryServiceRepository(expireTime time.Duration) *InMemoryServiceRepository {
 	return &InMemoryServiceRepository{
-		rwMutex:    new(sync.RWMutex),
+		rwMutex:    &sync.RWMutex{},
 		services:   make(map[string][]serviceInfo, 0),
-		expireTime: expireTime,
+		expireTime: expireTime * time.Second,
 	}
 }
 
@@ -58,7 +57,7 @@ func (r *InMemoryServiceRepository) StartMonitor() {
 
 func (r *InMemoryServiceRepository) GetAllServicesInfo() ([]models.Service, error) {
 	r.rwMutex.RLock()
-	defer r.rwMutex.Unlock()
+	defer r.rwMutex.RUnlock()
 
 	services := make([]models.Service, 0)
 	for name, info := range r.services {
@@ -102,9 +101,13 @@ func (r *InMemoryServiceRepository) RegisterService(name string, addr string) er
 	r.rwMutex.Lock()
 	defer r.rwMutex.Unlock()
 
-	replica := serviceInfo{expireTime: r.expireTime}
-	replica.Address = addr
-	replica.Status = ServiceStatusUP
+	replica := serviceInfo{
+		expireTime: r.expireTime,
+	}
+	replica.ServiceInfo = models.ServiceInfo{
+		Address: addr,
+		Status:  ServiceStatusUP,
+	}
 
 	info, ok := r.services[name]
 	if !ok {
@@ -163,7 +166,12 @@ func (r *InMemoryServiceRepository) UnregisterService(name string, addr string) 
 			} else {
 				info = append(info[:i], info[i+1:]...)
 			}
-			r.services[name] = info
+			if len(info) > 0 {
+				r.services[name] = info
+			} else {
+				delete(r.services, name)
+			}
+			return nil
 		}
 	}
 

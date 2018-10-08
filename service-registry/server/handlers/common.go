@@ -28,6 +28,14 @@ func writeResponseOK(c iris.Context) {
 
 func writeResponseError(c iris.Context, err error) {
 	switch err.(type) {
+	case *errors.InvalidFormatError:
+		c.StatusCode(http.StatusBadRequest)
+	case *errors.ConstraintViolationError:
+		c.StatusCode(http.StatusConflict)
+	case *errors.NotFoundError:
+		c.StatusCode(http.StatusNotFound)
+	case *errors.DuplicateError:
+		c.StatusCode(http.StatusConflict)
 	default:
 		c.StatusCode(http.StatusInternalServerError)
 	}

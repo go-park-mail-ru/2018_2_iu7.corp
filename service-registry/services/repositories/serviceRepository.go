@@ -5,8 +5,8 @@ import (
 )
 
 type ServiceRepository interface {
-	GetAllServicesInfo() (models.Services, error)
-	GetServiceInfo(name string) (models.Service, error)
+	GetAllServicesInfo() ([]models.Service, error)
+	GetServiceInfo(name string) (*models.Service, error)
 
 	RegisterService(name string, addr string) error
 	UpdateService(name string, addr string) error
