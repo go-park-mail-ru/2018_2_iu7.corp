@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"2018_2_iu7.corp/profile-service/errors"
+	"2018_2_iu7.corp/common/errors"
 	"github.com/kataras/iris"
 	"io/ioutil"
 	"net/http"
