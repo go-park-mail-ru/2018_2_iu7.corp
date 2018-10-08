@@ -1,6 +1,7 @@
 package main
 
 import (
+	"2018_2_iu7.corp/common/regclient"
 	"2018_2_iu7.corp/profile-service/profiles/repositories"
 	"2018_2_iu7.corp/profile-service/server"
 	"context"
@@ -14,8 +15,9 @@ import (
 )
 
 const (
-	DefaultAddress      = ":8080"
+	DefaultAddress      = ":8090"
 	DefaultShutdownTime = 10
+	DefaultRegistryURL  = "http://localhost:8765"
 )
 
 func main() {
@@ -27,6 +29,8 @@ func main() {
 	dbUserPtr := flag.String("dbuser", repositories.DefaultUser, "database user")
 	dbPasswordPtr := flag.String("dbpassword", repositories.DefaultPassword, "database password")
 	dbNamePtr := flag.String("dbname", repositories.DefaultDB, "database name")
+
+	regAddrPtr := flag.String("regaddr", DefaultRegistryURL, "registry service address")
 
 	flag.Parse()
 
@@ -68,6 +72,14 @@ func main() {
 		}
 	}()
 
+	client := regclient.NewClient("profile-service", *regAddrPtr, regclient.DefaultHeartbeatInterval)
+	if client == nil {
+		log.Fatal("registry client not created")
+	}
+
+	client.Register()
+	client.Start()
+
 	<-ch
 
 	shutdownTime := time.Duration(*shutdownTimePtr) * time.Second
@@ -77,4 +89,6 @@ func main() {
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Fatal("server shutdown failed")
 	}
+
+	client.Unregister()
 }

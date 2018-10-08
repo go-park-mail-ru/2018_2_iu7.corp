@@ -9,7 +9,7 @@ import (
 func RegisterService(r repositories.ServiceRepository) context.Handler {
 	return func(c iris.Context) {
 		name := c.Params().Get("serviceName")
-		addr := c.RemoteAddr()
+		addr := c.Request().RemoteAddr
 
 		if err := r.RegisterService(name, addr); err != nil {
 			writeResponseError(c, err)

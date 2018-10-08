@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	DefaultAddress      = ":8080"
+	DefaultAddress      = ":8765"
 	DefaultShutdownTime = 10
 )
 
