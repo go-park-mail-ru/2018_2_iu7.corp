@@ -8,6 +8,14 @@ import (
 
 func RegisterService(r repositories.ServiceRepository) context.Handler {
 	return func(c iris.Context) {
+		name := c.Params().Get("serviceName")
+		addr := c.RemoteAddr()
 
+		if err := r.RegisterService(name, addr); err != nil {
+			writeErrorJSON(c, err)
+			return
+		}
+
+		writeResponseOK(c)
 	}
 }

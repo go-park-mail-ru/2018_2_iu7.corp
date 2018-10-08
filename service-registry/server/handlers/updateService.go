@@ -8,6 +8,14 @@ import (
 
 func UpdateService(r repositories.ServiceRepository) context.Handler {
 	return func(c iris.Context) {
-		//TODO
+		name := c.Params().Get("serviceName")
+		addr := c.RemoteAddr()
+
+		if err := r.UpdateService(name, addr); err != nil {
+			writeErrorJSON(c, err)
+			return
+		}
+
+		writeResponseOK(c)
 	}
 }
