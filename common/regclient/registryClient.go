@@ -1,6 +1,7 @@
 package regclient
 
 import (
+	"bytes"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -13,17 +14,22 @@ const (
 )
 
 type Client struct {
-	name              string
-	registryAddress   string
+	serviceInfo       []byte
+	registryURL       string
 	mutex             sync.Mutex
 	isActive          bool
 	heartbeatInterval time.Duration
 }
 
-func NewClient(name string, registryAddr string, interval time.Duration) *Client {
+func NewClient(info ServiceInfo, regURL string, interval time.Duration) *Client {
+	sInfo, err := info.MarshalJSON()
+	if err != nil {
+		return nil
+	}
+
 	return &Client{
-		name: name,
-		registryAddress:   registryAddr,
+		serviceInfo:       sInfo,
+		registryURL:       regURL,
 		heartbeatInterval: interval * time.Second,
 	}
 }
@@ -61,7 +67,8 @@ func (c *Client) Unregister() {
 func (c *Client) performRequest(method string) {
 	client := &http.Client{}
 
-	req, err := http.NewRequest(method, c.registryAddress+ "/" + c.name, nil)
+	req, err := http.NewRequest(method, c.registryURL, bytes.NewReader(c.serviceInfo))
+
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Println("registry service not found")
@@ -70,6 +77,7 @@ func (c *Client) performRequest(method string) {
 		if err != nil {
 			panic(err)
 		}
+
 		log.Printf("registry service response: %v, %v", resp.StatusCode, string(rb))
 	}
 }

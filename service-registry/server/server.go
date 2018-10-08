@@ -18,11 +18,12 @@ func CreateServer(r repositories.ServiceRepository) (*iris.Application, error) {
 	})
 	server.Use(rLog)
 
-	server.Get("/", handlers.GetServices(r))
+	server.Get("/services", handlers.GetServices(r))
 	server.Get("/{serviceName}", handlers.GetService(r))
-	server.Post("/{serviceName}", handlers.RegisterService(r))
-	server.Put("/{serviceName}", handlers.UpdateService(r))
-	server.Delete("/{serviceName}", handlers.UnregisterService(r))
+
+	server.Post("/", handlers.RegisterService(r))
+	server.Put("/", handlers.UpdateService(r))
+	server.Delete("/", handlers.UnregisterService(r))
 
 	return server, nil
 }

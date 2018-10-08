@@ -15,9 +15,9 @@ import (
 )
 
 const (
-	DefaultAddress      = ":8090"
+	DefaultAddress      = "0.0.0.0:8090"
 	DefaultShutdownTime = 10
-	DefaultRegistryURL  = "http://localhost:8765"
+	DefaultRegistryURL  = "http://localhost:8765/"
 )
 
 func main() {
@@ -72,7 +72,12 @@ func main() {
 		}
 	}()
 
-	client := regclient.NewClient("profile-service", *regAddrPtr, regclient.DefaultHeartbeatInterval)
+	serviceInfo := regclient.ServiceInfo{
+		Name:    "profile-service",
+		Address: *addressPtr,
+	}
+
+	client := regclient.NewClient(serviceInfo, *regAddrPtr, regclient.DefaultHeartbeatInterval)
 	if client == nil {
 		log.Fatal("registry client not created")
 	}
