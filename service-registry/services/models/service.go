@@ -8,8 +8,8 @@ type ServiceInfo struct {
 
 //easyjson:json
 type Service struct {
-	Name     string        `json:"name"`
-	Replicas []ServiceInfo `json:"replicas"`
+	Name      string        `json:"name"`
+	Instances []ServiceInfo `json:"instances"`
 }
 
 //easyjson:json

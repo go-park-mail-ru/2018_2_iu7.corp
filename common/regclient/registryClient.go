@@ -30,7 +30,7 @@ func NewClient(info ServiceInfo, regURL string, interval time.Duration) *Client 
 	return &Client{
 		serviceInfo:       sInfo,
 		registryURL:       regURL,
-		heartbeatInterval: interval * time.Second,
+		heartbeatInterval: interval,
 	}
 }
 
@@ -45,13 +45,14 @@ func (c *Client) Register() {
 
 func (c Client) Start() {
 	go func() {
-		time.Sleep(c.heartbeatInterval)
-
-		c.mutex.Lock()
-		if c.isActive {
-			c.performRequest(http.MethodPut)
+		for {
+			c.mutex.Lock()
+			if c.isActive {
+				c.performRequest(http.MethodPut)
+			}
+			c.mutex.Unlock()
 		}
-		c.mutex.Unlock()
+		time.Sleep(c.heartbeatInterval)
 	}()
 }
 

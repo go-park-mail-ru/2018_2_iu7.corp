@@ -67,8 +67,8 @@ func (r *InMemoryServiceRepository) GetAllServicesInfo() ([]models.Service, erro
 		}
 
 		service := models.Service{
-			Name:     name,
-			Replicas: tmp,
+			Name:      name,
+			Instances: tmp,
 		}
 
 		services = append(services, service)
@@ -92,8 +92,8 @@ func (r *InMemoryServiceRepository) GetServiceInfo(name string) (*models.Service
 	}
 
 	return &models.Service{
-		Name:     name,
-		Replicas: tmp,
+		Name:      name,
+		Instances: tmp,
 	}, nil
 }
 
