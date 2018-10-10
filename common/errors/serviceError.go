@@ -6,7 +6,7 @@ type ServiceError struct {
 
 func NewServiceError() *ServiceError {
 	return &ServiceError{
-		message: "internal service error",
+		message: "internal services error",
 	}
 }
 

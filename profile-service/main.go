@@ -2,8 +2,8 @@ package main
 
 import (
 	"2018_2_iu7.corp/profile-service/repositories"
-	"2018_2_iu7.corp/profile-service/service/rest"
-	"2018_2_iu7.corp/profile-service/service/rpc"
+	"2018_2_iu7.corp/profile-service/services/rest"
+	"2018_2_iu7.corp/profile-service/services/rpc"
 	"context"
 	"flag"
 	"github.com/kataras/iris"
@@ -16,35 +16,15 @@ import (
 )
 
 const (
-	DefaultAddress      = "0.0.0.0:8090"
-	DefaultShutdownTime = 10
+	DefaultAddress      = "127.0.0.1:8090"
+	DefaultShutdownTime = 5 * time.Second
 )
 
 func main() {
-	addressPtr := flag.String("addr", DefaultAddress, "service address")
-	shutdownTimePtr := flag.Int("shutdown", DefaultShutdownTime, "service shutdown time [seconds]")
-
-	dbHostPtr := flag.String("dbhost", repositories.DefaultHost, "database host")
-	dbPortPtr := flag.String("dbport", repositories.DefaultPort, "database port")
-	dbUserPtr := flag.String("dbuser", repositories.DefaultUser, "database user")
-	dbPasswordPtr := flag.String("dbpassword", repositories.DefaultPassword, "database password")
-	dbNamePtr := flag.String("dbname", repositories.DefaultDB, "database name")
-
+	addressPtr := flag.String("-addr", DefaultAddress, "services address")
 	flag.Parse()
 
-	if len(flag.Args()) != 0 {
-		log.Fatal("unknown command-line arguments")
-	}
-
-	connParams := &repositories.ConnectionParams{
-		Host:     *dbHostPtr,
-		Port:     *dbPortPtr,
-		User:     *dbUserPtr,
-		Password: *dbPasswordPtr,
-		Database: *dbNamePtr,
-	}
-
-	r := repositories.NewDBProfileRepository(connParams)
+	r := repositories.NewDBProfileRepository()
 	if r == nil {
 		log.Fatal("profile repository not created")
 	}
@@ -57,12 +37,12 @@ func main() {
 
 	restSrv, err := rest.CreateService(r)
 	if err != nil {
-		log.Fatal("rest service not created")
+		log.Fatal("rest services not created")
 	}
 
 	rpcSrv, err := rpc.CreateService(r)
 	if err != nil {
-		log.Fatal("rpc service not started")
+		log.Fatal("rpc services not started")
 	}
 
 	ch := make(chan os.Signal)
@@ -82,11 +62,10 @@ func main() {
 
 	<-ch
 
-	shutdownTime := time.Duration(*shutdownTimePtr) * time.Second
-	ctx, cancel := context.WithTimeout(context.Background(), shutdownTime)
+	ctx, cancel := context.WithTimeout(context.Background(), DefaultShutdownTime)
 	defer cancel()
 
 	if err := restSrv.Shutdown(ctx); err != nil {
-		log.Fatal("service shutdown failed")
+		log.Fatal("services shutdown failed")
 	}
 }

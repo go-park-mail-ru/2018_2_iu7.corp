@@ -1,6 +1,6 @@
 package rpc
 
 const (
-	ServiceName = "profile-service"
+	ServiceName = "profile-services"
 	ClientName  = ServiceName + "-client"
 )

@@ -2,7 +2,7 @@ package rest
 
 import (
 	"2018_2_iu7.corp/profile-service/repositories"
-	"2018_2_iu7.corp/profile-service/service/rest/handlers"
+	"2018_2_iu7.corp/profile-service/services/rest/handlers"
 	"github.com/kataras/iris"
 	"github.com/kataras/iris/middleware/logger"
 )

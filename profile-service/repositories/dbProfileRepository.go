@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"os"
 	"strings"
 )
 
@@ -31,9 +32,15 @@ type DBProfileRepository struct {
 	connParams ConnectionParams
 }
 
-func NewDBProfileRepository(connParams *ConnectionParams) *DBProfileRepository {
+func NewDBProfileRepository() *DBProfileRepository {
 	return &DBProfileRepository{
-		connParams: *connParams,
+		connParams: ConnectionParams{
+			Host:     getEnvVar("POSTGRES_HOST", DefaultHost),
+			Port:     getEnvVar("POSTGRES_PORT", DefaultPort),
+			User:     getEnvVar("POSTGRES_USER", DefaultUser),
+			Password: getEnvVar("POSTGRES_PASSWORD", DefaultPassword),
+			Database: getEnvVar("POSTGRES_DB", DefaultDB),
+		},
 	}
 }
 
@@ -183,4 +190,12 @@ func classifyError(err error) error {
 	}
 
 	return errors.NewServiceError()
+}
+
+func getEnvVar(name, defaultValue string) string {
+	v := os.Getenv(name)
+	if v == "" {
+		v = defaultValue
+	}
+	return v
 }
