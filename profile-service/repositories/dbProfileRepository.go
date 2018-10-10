@@ -2,7 +2,7 @@ package repositories
 
 import (
 	"2018_2_iu7.corp/common/errors"
-	"2018_2_iu7.corp/profile-service/profiles/models"
+	"2018_2_iu7.corp/profile-service/models"
 	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"

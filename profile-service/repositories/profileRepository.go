@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"2018_2_iu7.corp/profile-service/profiles/models"
+	"2018_2_iu7.corp/profile-service/models"
 )
 
 type ProfileRepository interface {

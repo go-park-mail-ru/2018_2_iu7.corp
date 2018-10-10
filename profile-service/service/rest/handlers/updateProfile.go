@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"2018_2_iu7.corp/profile-service/profiles/models"
-	"2018_2_iu7.corp/profile-service/profiles/repositories"
+	"2018_2_iu7.corp/profile-service/models"
+	"2018_2_iu7.corp/profile-service/repositories"
 	"github.com/kataras/iris"
 	"github.com/kataras/iris/context"
 )

@@ -3,3 +3,7 @@
 
 ### EasyJSON ###
 *_easyjson.go
+
+### gRPC ###
+*.micro.go
+*.pb.go

@@ -7,7 +7,7 @@ import (
 	"github.com/kataras/iris/middleware/logger"
 )
 
-func CreateServer(r repositories.ProfileRepository) (*iris.Application, error) {
+func CreateService(r repositories.ProfileRepository) (*iris.Application, error) {
 	server := iris.Default()
 
 	rLog := logger.New(logger.Config{

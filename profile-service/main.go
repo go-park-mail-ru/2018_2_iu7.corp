@@ -1,9 +1,8 @@
 package main
 
 import (
-	"2018_2_iu7.corp/common/regclient"
-	"2018_2_iu7.corp/profile-service/profiles/repositories"
-	"2018_2_iu7.corp/profile-service/server"
+	"2018_2_iu7.corp/profile-service/repositories"
+	"2018_2_iu7.corp/profile-service/service/rest"
 	"context"
 	"flag"
 	"github.com/kataras/iris"
@@ -17,20 +16,17 @@ import (
 const (
 	DefaultAddress      = "0.0.0.0:8090"
 	DefaultShutdownTime = 10
-	DefaultRegistryURL  = "http://localhost:8765/"
 )
 
 func main() {
-	addressPtr := flag.String("addr", DefaultAddress, "server address")
-	shutdownTimePtr := flag.Int("shutdown", DefaultShutdownTime, "server shutdown time [seconds]")
+	addressPtr := flag.String("addr", DefaultAddress, "service address")
+	shutdownTimePtr := flag.Int("shutdown", DefaultShutdownTime, "service shutdown time [seconds]")
 
 	dbHostPtr := flag.String("dbhost", repositories.DefaultHost, "database host")
 	dbPortPtr := flag.String("dbport", repositories.DefaultPort, "database port")
 	dbUserPtr := flag.String("dbuser", repositories.DefaultUser, "database user")
 	dbPasswordPtr := flag.String("dbpassword", repositories.DefaultPassword, "database password")
 	dbNamePtr := flag.String("dbname", repositories.DefaultDB, "database name")
-
-	regAddrPtr := flag.String("regaddr", DefaultRegistryURL, "registry service address")
 
 	flag.Parse()
 
@@ -57,9 +53,9 @@ func main() {
 	}
 	defer r.Close()
 
-	srv, err := server.CreateServer(r)
+	srv, err := rest.CreateService(r)
 	if err != nil {
-		log.Fatal("server not created")
+		log.Fatal("service not created")
 	}
 
 	ch := make(chan os.Signal)
@@ -72,19 +68,6 @@ func main() {
 		}
 	}()
 
-	serviceInfo := regclient.ServiceInfo{
-		Name:    "profile-service",
-		Address: *addressPtr,
-	}
-
-	client := regclient.NewClient(serviceInfo, *regAddrPtr, regclient.DefaultHeartbeatInterval)
-	if client == nil {
-		log.Fatal("registry client not created")
-	}
-
-	client.Register()
-	client.Start()
-
 	<-ch
 
 	shutdownTime := time.Duration(*shutdownTimePtr) * time.Second
@@ -92,8 +75,6 @@ func main() {
 	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatal("server shutdown failed")
+		log.Fatal("service shutdown failed")
 	}
-
-	client.Unregister()
 }
