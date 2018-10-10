@@ -11,15 +11,16 @@ type ProfileServiceImpl struct {
 	profileRepository repositories.ProfileRepository
 }
 
-func CreateService(r repositories.ProfileRepository) *micro.Service {
-	service := micro.NewService(
-		micro.Name(ServiceName),
-	)
-
+func CreateService(r repositories.ProfileRepository) (*micro.Service, error) {
+	service := micro.NewService(micro.Name(ServiceName))
 	service.Init()
-	RegisterProfileServiceHandler(service.Server(), new(ProfileServiceImpl))
 
-	return &service
+	sImpl := &ProfileServiceImpl{
+		profileRepository: r,
+	}
+	RegisterProfileServiceHandler(service.Server(), sImpl)
+
+	return &service, nil
 }
 
 func (s *ProfileServiceImpl) GetProfile(ctx context.Context, req *Credentials, rsp *Profile) error {

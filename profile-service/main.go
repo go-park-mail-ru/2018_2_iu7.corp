@@ -3,9 +3,11 @@ package main
 import (
 	"2018_2_iu7.corp/profile-service/repositories"
 	"2018_2_iu7.corp/profile-service/service/rest"
+	"2018_2_iu7.corp/profile-service/service/rpc"
 	"context"
 	"flag"
 	"github.com/kataras/iris"
+	_ "github.com/micro/go-micro"
 	"log"
 	"os"
 	"os/signal"
@@ -53,17 +55,27 @@ func main() {
 	}
 	defer r.Close()
 
-	srv, err := rest.CreateService(r)
+	restSrv, err := rest.CreateService(r)
 	if err != nil {
-		log.Fatal("service not created")
+		log.Fatal("rest service not created")
+	}
+
+	rpcSrv, err := rpc.CreateService(r)
+	if err != nil {
+		log.Fatal("rpc service not started")
 	}
 
 	ch := make(chan os.Signal)
 	signal.Notify(ch, os.Interrupt, syscall.SIGINT|syscall.SIGTERM)
 
 	go func() {
-		err := srv.Run(iris.Addr(*addressPtr))
-		if err != nil {
+		if err := restSrv.Run(iris.Addr(*addressPtr)); err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	go func() {
+		if err := (*rpcSrv).Run(); err != nil {
 			log.Fatal(err)
 		}
 	}()
@@ -74,7 +86,7 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), shutdownTime)
 	defer cancel()
 
-	if err := srv.Shutdown(ctx); err != nil {
+	if err := restSrv.Shutdown(ctx); err != nil {
 		log.Fatal("service shutdown failed")
 	}
 }
