@@ -16,12 +16,12 @@ import (
 )
 
 const (
-	DefaultAddress      = "127.0.0.1:8090"
+	DefaultAddress      = ":8090"
 	DefaultShutdownTime = 5 * time.Second
 )
 
 func main() {
-	addressPtr := flag.String("-addr", DefaultAddress, "services address")
+	addressPtr := flag.String("addr", DefaultAddress, "services address")
 	flag.Parse()
 
 	r := repositories.NewDBProfileRepository()

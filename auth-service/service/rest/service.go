@@ -1,12 +1,12 @@
-package server
+package rest
 
 import (
-	"2018_2_iu7.corp/auth-service/server/handlers"
+	"2018_2_iu7.corp/auth-service/service/rest/handlers"
 	"github.com/kataras/iris"
 	"github.com/kataras/iris/middleware/logger"
 )
 
-func CreateServer() (*iris.Application, error) {
+func CreateService() (*iris.Application, error) {
 	server := iris.Default()
 
 	rLog := logger.New(logger.Config{

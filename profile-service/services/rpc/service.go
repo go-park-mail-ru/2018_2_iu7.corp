@@ -5,6 +5,8 @@ import (
 	"2018_2_iu7.corp/profile-service/repositories"
 	"context"
 	"github.com/micro/go-micro"
+	"github.com/micro/go-micro/registry"
+	"github.com/micro/go-plugins/registry/eureka"
 )
 
 type ProfileServiceImpl struct {
@@ -12,7 +14,14 @@ type ProfileServiceImpl struct {
 }
 
 func CreateService(r repositories.ProfileRepository) (*micro.Service, error) {
-	service := micro.NewService(micro.Name(ServiceName))
+	reg := eureka.NewRegistry(
+		registry.Addrs("http://localhost:8761/eureka"),
+	)
+
+	service := micro.NewService(
+		micro.Name(ServiceName),
+		micro.Registry(reg),
+	)
 	service.Init()
 
 	sImpl := &ProfileServiceImpl{

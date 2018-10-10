@@ -7,3 +7,8 @@
 ### gRPC ###
 *.micro.go
 *.pb.go
+
+### Intellij IDEA ###
+*.iml
+*/out/
+*/.gradle/
