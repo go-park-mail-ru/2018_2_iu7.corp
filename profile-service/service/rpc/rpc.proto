@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+service ProfileService {
+    rpc GetProfile(Credentials) returns (Profile) {}
+}
+
+message Credentials {
+    string username = 1;
+    string password = 2;
+}
+
+message Profile {
+    uint32 ID = 1;
+}

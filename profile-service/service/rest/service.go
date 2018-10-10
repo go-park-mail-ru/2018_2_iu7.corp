@@ -1,8 +1,8 @@
-package server
+package rest
 
 import (
-	"2018_2_iu7.corp/profile-service/profiles/repositories"
-	"2018_2_iu7.corp/profile-service/server/handlers"
+	"2018_2_iu7.corp/profile-service/repositories"
+	"2018_2_iu7.corp/profile-service/service/rest/handlers"
 	"github.com/kataras/iris"
 	"github.com/kataras/iris/middleware/logger"
 )
@@ -23,7 +23,6 @@ func CreateServer(r repositories.ProfileRepository) (*iris.Application, error) {
 	server.Put("/{profileID:int}", handlers.UpdateProfile(r))
 	server.Delete("/{profileID:int}", handlers.DeleteProfile(r))
 	server.Get("/leaders", handlers.GetLeaders(r))
-	server.Post("/credentials/check", handlers.CheckCredentials(r))
 
 	return server, nil
 }
