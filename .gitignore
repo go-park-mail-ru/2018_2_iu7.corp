@@ -11,4 +11,7 @@
 ### Intellij IDEA ###
 *.iml
 */out/
+
+### Gradle ###
 */.gradle/
+*/build/
