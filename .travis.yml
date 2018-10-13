@@ -1,0 +1,15 @@
+os: linux
+dist: trusty
+sudo: enabled
+
+language: go
+go:
+- "1.11"
+
+addons:
+  apt:
+    packages:
+    - openjdk-11-jdk
+
+script:
+- ./install.sh && ./make.sh
